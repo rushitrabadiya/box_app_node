@@ -1,0 +1,11 @@
+// Register ts-node so sequelize-cli can run TS files
+require('ts-node/register');
+
+const base = 'src/db';
+
+module.exports = {
+  config: `${base}/config.js`,
+  'migrations-path': `${base}/migrations`,
+  'seeders-path': `${base}/seeders`,
+  'models-path': 'src/models/pg',
+};
