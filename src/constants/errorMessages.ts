@@ -14,4 +14,7 @@ export enum AUTH_ERROR_MESSAGES {
   PLEASE_VERIFY_YOUR_EMAIL_AND_PHONE = 'Please verify your email and phone',
   MISSING_TOKEN = 'Missing token',
   INVALID_TOKEN = 'Invalid token',
+  USER_NOT_VERIFIED = 'User not verified',
+  INVALID_REFRESH_TOKEN = 'Invalid refresh token',
+  MISSING_REFRESH_TOKEN = 'Missing refresh token',
 }

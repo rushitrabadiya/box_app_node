@@ -12,5 +12,5 @@ applySecurity(app);
 app.use(express.json());
 
 app.use(logger);
-app.use('/api', routes);
+app.use('/api/v1', routes);
 app.use(errorHandler);

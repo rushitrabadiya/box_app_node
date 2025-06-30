@@ -1,30 +1,47 @@
 import { Request, Response, NextFunction } from 'express';
-import { PgUser } from '../models/pg/user.model';
 import { MINUTE_MS, OTP_EXPIRY_MINUTES } from '../constants/app';
 import { sendSuccess } from '../utils/apiResponse';
 import { ApiError } from '../utils/apiError';
-import { signAccessToken, signRefreshToken } from '../utils/auth';
-import crypto from 'crypto';
-import bcrypt from 'bcrypt';
+import {
+  comparePassword,
+  generatePasswordResetToken,
+  hashPassword,
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from '../utils/auth';
 import { FRONTEND_URL } from '../constants/app';
-import { sendEmail } from '../utils/email';
+import { sendEmail, sendOtpEmail } from '../utils/email';
 import { AUTH_ERROR_MESSAGES, USER_ERROR_MESSAGES } from '../constants/errorMessages';
-import { AUTH_SUCCESS_MESSAGES } from '../constants/successMessages';
+import { AUTH_SUCCESS_MESSAGES, USER_SUCCESS_MESSAGES } from '../constants/successMessages';
+import { User } from '../models/mongo/user.model';
+import { generateOtp } from '../utils/common';
+import { StatusCode } from '../constants/statusCodes';
+import { buildResetPasswordEmail } from '../utils/mailer';
 
 export class AuthController {
-  private generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
-
   async requestOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { phone } = req.body;
-      const otp = this.generateOtp();
+      const { email } = req.body;
+      const otp = generateOtp();
       const otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
 
-      await PgUser.upsert({ phone, otp, otpExpires, isPhoneVerified: false, name: '' });
+      const user = await User.findOne({ where: { email } });
+      if (!user) {
+        return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
+      }
 
-      console.log(`OTP for ${phone}: ${otp}`);
+      await User.updateOne(
+        { _id: user.id },
+        {
+          otp,
+          otpExpires,
+        },
+      );
+      // Send OTP via email
+      sendOtpEmail(email, otp, OTP_EXPIRY_MINUTES);
 
-      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.OTP_SENT });
+      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.OTP_SENT }, StatusCode.OK);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -32,9 +49,9 @@ export class AuthController {
 
   async verifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { phone, otp } = req.body;
+      const { email, otp } = req.body;
 
-      const user = await PgUser.findOne({ where: { phone } });
+      const user = await User.findOne({ where: { email } });
 
       if (!user) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
@@ -44,17 +61,20 @@ export class AuthController {
         return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.INVALID_OTP));
       }
 
-      if (user.otpExpires && user.otpExpires < new Date()) {
+      if (user.otpExpiresAt && user.otpExpiresAt < new Date()) {
         return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.OTP_EXPIRED));
       }
 
-      await user.update({
-        isPhoneVerified: true,
-        otp: '',
-        otpExpires: null,
-      });
+      await User.updateOne(
+        { _id: user.id },
+        {
+          emailVerified: true,
+          otp: '',
+          otpExpires: null,
+        },
+      );
 
-      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.PHONE_VERIFIED });
+      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.EMAIL_VERIFIED }, StatusCode.OK);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -63,44 +83,36 @@ export class AuthController {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { name, email, phone, password } = req.body;
-      const user = await PgUser.findOne({ where: { phone } });
+      const user = await User.findOne({ where: { phone } });
 
       if (user) {
         return next(ApiError.badRequest(USER_ERROR_MESSAGES.USER_ALREADY_EXISTS));
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const emailVerificationToken = crypto.randomBytes(32).toString('hex') as string;
-      const otp = this.generateOtp();
+      const hashedPassword = await hashPassword(password);
+
+      const otp = generateOtp();
       const otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
 
-      const newUser = await PgUser.create({
+      const newUser = await User.create({
         name,
         email,
         phone,
         passwordHash: hashedPassword,
-        emailVerificationToken,
         otp,
         otpExpires,
         isPhoneVerified: false,
         isEmailVerified: false,
       });
 
-      // Send verification email
-      const verificationLink = `${FRONTEND_URL}/verify-email?token=${emailVerificationToken}`;
-      await sendEmail(
-        email,
-        'Verify your email',
-        `
-        <h3>Verify your email</h3>
-        <p>Please click the link below to verify your email:</p>
-        <a href="${verificationLink}">${verificationLink}</a>
-      `,
+      // Send OTP via email
+      sendOtpEmail(email, otp, OTP_EXPIRY_MINUTES);
+
+      sendSuccess(
+        res,
+        { data: newUser, message: AUTH_SUCCESS_MESSAGES.REGISTRATION_SUCCESS },
+        StatusCode.CREATED,
       );
-
-      console.log(`OTP for ${phone}: ${otp}`);
-
-      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.REGISTRATION_SUCCESS });
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -109,37 +121,123 @@ export class AuthController {
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;
-      const user = await PgUser.findOne({ where: { email } });
+      const user = await User.findOne({ where: { email } });
 
       if (!user) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash as string);
+      const isPasswordValid = comparePassword(password, user.password as string);
       if (!isPasswordValid) {
         return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS));
       }
 
-      if (!user.isEmailVerified || !user.isPhoneVerified) {
+      if (!user.emailVerified) {
         return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.PLEASE_VERIFY_YOUR_EMAIL_AND_PHONE));
       }
 
       const accessToken = signAccessToken(user.id);
       const refreshToken = signRefreshToken(user.id);
 
-      await user.update({ refreshToken });
-
-      sendSuccess(res, {
-        message: AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
-        accessToken,
-        refreshToken,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
+      sendSuccess(
+        res,
+        {
+          message: AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
+          accessToken,
+          refreshToken,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+          },
         },
-      });
+        StatusCode.OK,
+      );
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
+  async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { refreshToken } = req.body;
+
+      if (!refreshToken) {
+        return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.MISSING_REFRESH_TOKEN));
+      }
+
+      const userId = verifyRefreshToken(refreshToken);
+      if (!userId) {
+        return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_REFRESH_TOKEN));
+      }
+
+      const accessToken = signAccessToken(userId);
+      sendSuccess(res, { accessToken }, StatusCode.OK);
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
+  async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { refreshToken } = req.body;
+
+      if (!refreshToken) {
+        return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.MISSING_REFRESH_TOKEN));
+      }
+      //token remove
+      sendSuccess(res, { message: USER_SUCCESS_MESSAGES.USER_LOGOUT_SUCCESS }, StatusCode.OK);
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email } = req.body;
+      const user = await User.findOne({ where: { email, isDeleted: false } });
+      if (!user) {
+        return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
+      }
+      const { token, hashedToken, expiry } = generatePasswordResetToken();
+
+      // Email details
+      const validateTime = 15;
+      const resetLink = `https://yourdomain.com/reset-password/${token}`;
+      const subject = 'Reset Your Password';
+      const html = buildResetPasswordEmail(resetLink, validateTime);
+
+      sendEmail(user.email, subject, html);
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
+  async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user?._id;
+
+      if (!userId) {
+        return next(ApiError.unauthorized(USER_ERROR_MESSAGES.USER_NOT_FOUND));
+      }
+
+      const user = await User.findById(userId);
+      if (!user || user.isDeleted) {
+        return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
+      }
+
+      const isPasswordValid = await comparePassword(currentPassword, user.password as string);
+      if (!isPasswordValid) {
+        return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS));
+      }
+
+      const hashedNewPassword = await hashPassword(newPassword);
+      user.password = hashedNewPassword;
+      await user.save();
+
+      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.PASSWORD_CHANGED }, StatusCode.OK);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }

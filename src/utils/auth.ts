@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { sign, Secret, verify, SignOptions, VerifyOptions } from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { randomString } from './common';
+import { createHashString, randomString } from './common';
+import { createHash } from 'crypto';
+import { MINUTE_MS } from '../constants/app';
 
 dotenv.config();
 
@@ -56,6 +58,26 @@ export const verifyToken = <T = any>(token: string): T | null => {
   }
 };
 
+export const verifyRefreshToken = (token: string): string | null => {
+  const payload = verifyToken<{ sub: string; type: string }>(token);
+  if (payload && payload.type === 'refresh') {
+    return payload.sub;
+  }
+  return null;
+};
+
 // Generate tokens for email verification or password reset
 export const generateEmailVerificationToken = (): string => randomString(32);
-export const generatePasswordResetToken = (): string => randomString(32);
+
+export const generatePasswordResetToken = (
+  validateTime: number = 15,
+): {
+  token: string;
+  hashedToken: string;
+  expiry: Date;
+} => {
+  const token = randomString(32);
+  const hashedToken = createHashString(token);
+  const expiry = new Date(Date.now() + validateTime * MINUTE_MS);
+  return { token, hashedToken, expiry };
+};

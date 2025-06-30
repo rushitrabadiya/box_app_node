@@ -46,8 +46,19 @@ export const omit = <T extends object, K extends keyof T>(obj: T, keys: K[]): Om
 /** Generate a cryptographically-secure random string */
 export const randomString = (length = 32): string => crypto.randomBytes(length / 2).toString('hex');
 
+/** Create a SHA-256 hash of a string */
+export const createHashString = (token: string) =>
+  crypto.createHash('sha256').update(token).digest('hex');
+
 /** Calculate pagination offset */
 export const getPagination = (page = 1, limit = 10) => ({
   limit,
   offset: (page - 1) * limit,
 });
+
+export const generateOtp = (length = 6): string => {
+  const min = Math.pow(10, length - 1);
+  const max = Math.pow(10, length) - 1;
+  const random = crypto.randomInt(min, max + 1);
+  return random.toString();
+};
