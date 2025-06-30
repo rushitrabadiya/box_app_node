@@ -10,11 +10,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendEmail = async (
-  to: string,
-  subject: string,
-  html: string,
-): Promise<void> => {
+export const sendEmail = async (to: string, subject: string, html: string): Promise<void> => {
   const mailOptions = {
     from: process.env.SMTP_FROM,
     to,
