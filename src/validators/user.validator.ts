@@ -41,6 +41,51 @@ class UserValidator {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
   }
+
+  async getUserById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const schema = Joi.object({
+        id: Joi.string().required(),
+      });
+
+      const { error } = schema.validate(req.params);
+
+      if (error) {
+        const errorMessage = error.details.map((details) => details.message).join(', ');
+        return next(ApiError.badRequest(errorMessage));
+      }
+
+      return next();
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
+  async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const schema = Joi.object({
+        search: Joi.string().optional(),
+        email: Joi.string().email().optional(),
+        isDeleted: Joi.boolean().optional(),
+        isActive: Joi.boolean().optional(),
+        city: Joi.string().optional(),
+        country: Joi.string().optional(),
+        state: Joi.string().optional(),
+        zipCode: Joi.string().optional(),
+      });
+
+      const { error } = schema.validate(req.query);
+
+      if (error) {
+        const errorMessage = error.details.map((details) => details.message).join(', ');
+        return next(ApiError.badRequest(errorMessage));
+      }
+
+      return next();
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
 }
 
 export const userValidator = new UserValidator();

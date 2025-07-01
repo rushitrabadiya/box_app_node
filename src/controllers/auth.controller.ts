@@ -1,3 +1,4 @@
+import { omit } from './../utils/common';
 import { Request, Response, NextFunction } from 'express';
 import { MINUTE_MS, OTP_EXPIRY_MINUTES } from '../constants/app';
 import { sendSuccess } from '../utils/apiResponse';
@@ -69,7 +70,7 @@ export class AuthController {
         { _id: user.id },
         {
           emailVerified: true,
-          otp: '',
+          otp: null,
           otpExpires: null,
         },
       );
@@ -132,7 +133,7 @@ export class AuthController {
       if (!user.emailVerified) {
         return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.PLEASE_VERIFY_YOUR_EMAIL_AND_PHONE));
       }
-
+      const safeUser = omit(user.toObject(), ['otp', 'otpExpiresAt', 'password']);
       const accessToken = signAccessToken(user.id);
       const refreshToken = signRefreshToken(user.id);
 
@@ -142,12 +143,7 @@ export class AuthController {
           message: AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
           accessToken,
           refreshToken,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-          },
+          safeUser,
         },
         StatusCode.OK,
       );

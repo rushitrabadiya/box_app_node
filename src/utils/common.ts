@@ -34,15 +34,25 @@ export const pick = <T extends object, K extends keyof T>(obj: T, keys: K[]): Pi
   return result;
 };
 
-/** Simple object.key omitter */
-export const omit = <T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> => {
-  const result = { ...obj } as T;
-  keys.forEach((k) => {
-    delete (result as any)[k];
-  });
-  return result as Omit<T, K>;
+/**
+ * Returns a new object with specified keys omitted.
+ * @param obj The source object
+ * @param keys The keys to omit from the object
+ */
+export const omit = <T extends Record<string, any>, K extends keyof T>(
+  obj: T,
+  keys: K[],
+): Omit<T, K> => {
+  return Object.keys(obj).reduce(
+    (acc, key) => {
+      if (!keys.includes(key as K)) {
+        (acc as any)[key] = obj[key];
+      }
+      return acc;
+    },
+    {} as Omit<T, K>,
+  );
 };
-
 /** Generate a cryptographically-secure random string */
 export const randomString = (length = 32): string => crypto.randomBytes(length / 2).toString('hex');
 

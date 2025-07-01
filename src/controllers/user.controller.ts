@@ -56,6 +56,7 @@ class UserController {
 
   async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const reqData = { ...req.body, ...req.query, ...req.params };
       const users = await User.find({ isDeleted: false })
         .select('-password -otp -otpExpiresAt -createdBy')
         .sort({ createdAt: -1 });
