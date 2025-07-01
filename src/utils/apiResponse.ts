@@ -1,6 +1,5 @@
+import { StatusCode } from './../constants/statusCodes';
 import { Response } from 'express';
-import { StatusCode } from '../constants/statusCodes';
-
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -21,5 +20,5 @@ export const sendSuccess = <T>(
   data: T,
   statusCode: StatusCode = StatusCode.OK,
 ): void => {
-  res.status(statusCode).json({ success: true, data } as ApiResponse<T>);
+  res.status(statusCode).json({ success: true, data, statusCode } as ApiResponse<T>);
 };

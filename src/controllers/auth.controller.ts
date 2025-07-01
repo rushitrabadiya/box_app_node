@@ -24,9 +24,9 @@ export class AuthController {
     try {
       const { email } = req.body;
       const otp = generateOtp();
-      const otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
+      const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
 
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findOne({ email, isDeleted: false });
       if (!user) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
@@ -35,7 +35,7 @@ export class AuthController {
         { _id: user.id },
         {
           otp,
-          otpExpires,
+          otpExpiresAt,
         },
       );
       // Send OTP via email
@@ -51,7 +51,7 @@ export class AuthController {
     try {
       const { email, otp } = req.body;
 
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findOne({ email, isDeleted: false });
 
       if (!user) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
@@ -82,31 +82,27 @@ export class AuthController {
 
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { name, email, phone, password } = req.body;
-      const user = await User.findOne({ where: { phone } });
+      const reqData = { ...req.body, ...req.query };
+      const user = await User.findOne({ where: { phone: reqData.phone } });
 
       if (user) {
         return next(ApiError.badRequest(USER_ERROR_MESSAGES.USER_ALREADY_EXISTS));
       }
 
-      const hashedPassword = await hashPassword(password);
+      const hashedPassword = await hashPassword(reqData.password);
 
       const otp = generateOtp();
-      const otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
+      const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
 
       const newUser = await User.create({
-        name,
-        email,
-        phone,
-        passwordHash: hashedPassword,
+        ...reqData,
+        password: hashedPassword,
         otp,
-        otpExpires,
-        isPhoneVerified: false,
-        isEmailVerified: false,
+        otpExpiresAt,
       });
 
       // Send OTP via email
-      sendOtpEmail(email, otp, OTP_EXPIRY_MINUTES);
+      sendOtpEmail(reqData.email, otp, OTP_EXPIRY_MINUTES);
 
       sendSuccess(
         res,
@@ -121,7 +117,12 @@ export class AuthController {
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password } = req.body;
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findOne({
+        email,
+        isBlocked: false,
+        isDeleted: false,
+        isActive: true,
+      });
 
       if (!user) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
@@ -161,13 +162,9 @@ export class AuthController {
 
   async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { refreshToken } = req.body;
+      const reqData = { ...req.body, ...req.query };
 
-      if (!refreshToken) {
-        return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.MISSING_REFRESH_TOKEN));
-      }
-
-      const userId = verifyRefreshToken(refreshToken);
+      const userId = verifyRefreshToken(reqData.refreshToken);
       if (!userId) {
         return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_REFRESH_TOKEN));
       }
@@ -196,7 +193,7 @@ export class AuthController {
   async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email } = req.body;
-      const user = await User.findOne({ where: { email, isDeleted: false } });
+      const user = await User.findOne({ email, isDeleted: false });
       if (!user) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
@@ -216,7 +213,7 @@ export class AuthController {
 
   async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { currentPassword, newPassword } = req.body;
+      const { oldPassword, newPassword } = req.body;
       const userId = req.user?._id;
 
       if (!userId) {
@@ -228,7 +225,7 @@ export class AuthController {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
-      const isPasswordValid = await comparePassword(currentPassword, user.password as string);
+      const isPasswordValid = await comparePassword(oldPassword, user.password as string);
       if (!isPasswordValid) {
         return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS));
       }

@@ -11,9 +11,7 @@ class AuthValidator {
   async validateRequestOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({
-        email: Joi.string()
-          .pattern(/^\d{10,15}$/)
-          .required(),
+        email: Joi.string().required(),
       });
 
       const { error } = schema.validate(req.body, options);
@@ -32,9 +30,7 @@ class AuthValidator {
   async validateVerifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({
-        email: Joi.string()
-          .pattern(/^\d{10,15}$/)
-          .required(),
+        email: Joi.string().required(),
         otp: Joi.string().length(6).required(),
       });
 
@@ -73,8 +69,8 @@ class AuthValidator {
         emailVerified: Joi.boolean().default(false),
         phoneVerified: Joi.boolean().default(false),
         isBlocked: Joi.boolean().default(false),
-        otp: Joi.string().required(),
-        otpExpiresAt: Joi.date().required(),
+        otp: Joi.string().optional(),
+        otpExpiresAt: Joi.date().optional(),
       });
 
       const { error } = schema.validate(req.body, options);

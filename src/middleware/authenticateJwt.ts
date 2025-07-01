@@ -25,7 +25,7 @@ export const authenticateJwt = async (
     if (!user || user.isDeleted || !user.isActive || user.isBlocked) {
       throw new Error(USER_ERROR_MESSAGES.USER_NOT_FOUND);
     }
-    req.user = omit(user, ['password']);
+    req.user = user as IUserDocument;
     next();
   } catch (err) {
     res.status(StatusCode.UNAUTHORIZED).json({ error: AUTH_ERROR_MESSAGES.INVALID_TOKEN });
