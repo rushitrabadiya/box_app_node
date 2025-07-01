@@ -10,6 +10,7 @@ export enum AUTH_SUCCESS_MESSAGES {
   EMAIL_VERIFIED = 'Email verified',
   REGISTRATION_SUCCESS = 'Registration successful',
   PASSWORD_CHANGED = 'Password changed successfully',
+  TOKEN_REFRESHED = 'Access token refreshed successfully',
 }
 
 export enum USER_SUCCESS_MESSAGES {

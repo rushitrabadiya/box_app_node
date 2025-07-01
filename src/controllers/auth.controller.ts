@@ -41,7 +41,7 @@ export class AuthController {
       // Send OTP via email
       sendOtpEmail(email, otp, OTP_EXPIRY_MINUTES);
 
-      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.OTP_SENT }, StatusCode.OK);
+      sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.OTP_SENT);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -74,7 +74,7 @@ export class AuthController {
         },
       );
 
-      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.EMAIL_VERIFIED }, StatusCode.OK);
+      sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.EMAIL_VERIFIED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -104,11 +104,7 @@ export class AuthController {
       // Send OTP via email
       sendOtpEmail(reqData.email, otp, OTP_EXPIRY_MINUTES);
 
-      sendSuccess(
-        res,
-        { data: newUser, message: AUTH_SUCCESS_MESSAGES.REGISTRATION_SUCCESS },
-        StatusCode.CREATED,
-      );
+      sendSuccess(res, newUser, StatusCode.CREATED, AUTH_SUCCESS_MESSAGES.REGISTRATION_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -170,7 +166,7 @@ export class AuthController {
       }
 
       const accessToken = signAccessToken(userId);
-      sendSuccess(res, { accessToken }, StatusCode.OK);
+      sendSuccess(res, accessToken, StatusCode.OK, AUTH_SUCCESS_MESSAGES.TOKEN_REFRESHED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -184,7 +180,7 @@ export class AuthController {
         return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.MISSING_REFRESH_TOKEN));
       }
       //token remove
-      sendSuccess(res, { message: USER_SUCCESS_MESSAGES.USER_LOGOUT_SUCCESS }, StatusCode.OK);
+      sendSuccess(res, null, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_LOGOUT_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -234,7 +230,7 @@ export class AuthController {
       user.password = hashedNewPassword;
       await user.save();
 
-      sendSuccess(res, { message: AUTH_SUCCESS_MESSAGES.PASSWORD_CHANGED }, StatusCode.OK);
+      sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.PASSWORD_CHANGED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }

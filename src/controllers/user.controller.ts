@@ -18,7 +18,7 @@ class UserController {
 
       const user = await User.create({ ...reqData, createdBy: req.user?._id });
 
-      sendSuccess(res, { message: USER_SUCCESS_MESSAGES.USER_CREATED, user }, StatusCode.CREATED);
+      sendSuccess(res, user, StatusCode.CREATED, USER_SUCCESS_MESSAGES.USER_CREATED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -31,7 +31,7 @@ class UserController {
       if (!user || user.isDeleted) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
-      sendSuccess(res, { user, message: USER_SUCCESS_MESSAGES.USER_GET_SUCCESS }, StatusCode.OK);
+      sendSuccess(res, user, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_GET_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -48,7 +48,7 @@ class UserController {
       if (!user || user.isDeleted) {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
-      sendSuccess(res, { user, message: USER_SUCCESS_MESSAGES.USER_GET_SUCCESS }, StatusCode.OK);
+      sendSuccess(res, user, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_GET_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -60,7 +60,7 @@ class UserController {
         .select('-password -otp -otpExpiresAt -createdBy')
         .sort({ createdAt: -1 });
 
-      sendSuccess(res, { users, message: USER_SUCCESS_MESSAGES.USER_GET_SUCCESS }, StatusCode.OK);
+      sendSuccess(res, users, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_GET_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -76,7 +76,7 @@ class UserController {
       user.isDeleted = true;
       await user.save();
 
-      sendSuccess(res, { message: USER_SUCCESS_MESSAGES.USER_DELETED }, StatusCode.OK);
+      sendSuccess(res, null, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_DELETED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -106,7 +106,7 @@ class UserController {
         new: true,
       });
 
-      sendSuccess(res, { message: USER_SUCCESS_MESSAGES.USER_UPDATED, user }, StatusCode.OK);
+      sendSuccess(res, user, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_UPDATED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }

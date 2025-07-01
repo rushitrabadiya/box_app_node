@@ -19,6 +19,12 @@ export const sendSuccess = <T>(
   res: Response,
   data: T,
   statusCode: StatusCode = StatusCode.OK,
+  message: string = 'Success',
 ): void => {
-  res.status(statusCode).json({ success: true, data, statusCode } as ApiResponse<T>);
+  res.status(statusCode).json({
+    success: true,
+    message,
+    statusCode,
+    data,
+  });
 };
