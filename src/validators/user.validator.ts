@@ -11,10 +11,11 @@ class UserValidator {
         password: Joi.string().min(6), // Optional per interface (with ?)
         isActive: Joi.boolean().default(true),
         isDeleted: Joi.boolean().default(false),
+        isAdmin: Joi.boolean().default(false),
         phone: Joi.string()
           .pattern(/^\d{10,15}$/)
           .required(),
-        address: Joi.string().allow('').required(),
+        address: Joi.string().allow('', null).required(),
         gender: Joi.string().valid('male', 'female', 'other').required(),
         dateOfBirth: Joi.date().required(),
         profilePicture: Joi.string().uri().allow('', null),

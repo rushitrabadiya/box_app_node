@@ -84,7 +84,12 @@ export class AuthController {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const reqData = { ...req.body, ...req.query };
-      const user = await User.findOne({ where: { phone: reqData.phone } });
+      const user = await User.findOne({ email: reqData.email });
+
+      if (reqData.isAdmin) {
+        const exitsAdmin = await User.findOne({ isAdmin: true, isDeleted: false });
+        if (exitsAdmin) return next(ApiError.badRequest(USER_ERROR_MESSAGES.ADMIN_ALREADY_EXITS));
+      }
 
       if (user) {
         return next(ApiError.badRequest(USER_ERROR_MESSAGES.USER_ALREADY_EXISTS));
@@ -234,4 +239,3 @@ export class AuthController {
 }
 
 export const authController = new AuthController();
-export default new AuthController();

@@ -21,6 +21,7 @@ export interface IUserDocument extends Document, IUser {
   isBlocked: boolean;
   otp: string;
   otpExpiresAt: Date;
+  isAdmin?: boolean;
 }
 
 const userSchema = new Schema<IUserDocument>(
@@ -44,6 +45,7 @@ const userSchema = new Schema<IUserDocument>(
     isBlocked: { type: Boolean, default: false },
     otp: { type: String, default: null },
     otpExpiresAt: { type: Date },
+    isAdmin: { type: Boolean, default: false },
   },
 
   { timestamps: true },

@@ -22,4 +22,5 @@ export interface IUser extends IBaseModel {
   isBlocked: boolean;
   otp: string;
   otpExpiresAt: Date;
+  isAdmin?: boolean;
 }

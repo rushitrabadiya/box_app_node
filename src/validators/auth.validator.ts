@@ -53,12 +53,13 @@ class AuthValidator {
         name: Joi.string().min(2).required(),
         email: Joi.string().email().required(),
         password: Joi.string().min(6), // Optional per interface (with ?)
+        isAdmin: Joi.boolean().default(false),
         isActive: Joi.boolean().default(true),
         isDeleted: Joi.boolean().default(false),
         phone: Joi.string()
           .pattern(/^\d{10,15}$/)
           .required(),
-        address: Joi.string().allow('').required(),
+        address: Joi.string().allow('', null).required(),
         gender: Joi.string().valid('male', 'female', 'other').required(),
         dateOfBirth: Joi.date().required(),
         profilePicture: Joi.string().uri().allow('', null),

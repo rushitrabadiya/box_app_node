@@ -6,6 +6,7 @@ export enum ErrorMessage {
 export enum USER_ERROR_MESSAGES {
   USER_NOT_FOUND = 'User not found',
   USER_ALREADY_EXISTS = 'User already exists',
+  ADMIN_ALREADY_EXITS = 'Admin already exists',
 }
 export enum AUTH_ERROR_MESSAGES {
   INVALID_OTP = 'Invalid OTP',

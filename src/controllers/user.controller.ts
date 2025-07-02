@@ -5,6 +5,7 @@ import { USER_SUCCESS_MESSAGES } from '../constants/successMessages';
 import { User } from '../models/mongo/user.model';
 import { StatusCode } from '../constants/statusCodes';
 import { USER_ERROR_MESSAGES } from '../constants/errorMessages';
+import { buildMongoFilter } from '../utils/queryBuilder';
 
 class UserController {
   async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -14,6 +15,10 @@ class UserController {
       const existingUser = await User.findOne({ email: reqData.email, isDeleted: false });
       if (existingUser) {
         return next(ApiError.badRequest(USER_ERROR_MESSAGES.USER_ALREADY_EXISTS));
+      }
+      if (reqData.isAdmin) {
+        const exitsAdmin = await User.findOne({ isAdmin: true, isDeleted: false });
+        if (exitsAdmin) return next(ApiError.badRequest(USER_ERROR_MESSAGES.ADMIN_ALREADY_EXITS));
       }
 
       const user = await User.create({ ...reqData, createdBy: req.user?._id });
@@ -57,7 +62,14 @@ class UserController {
   async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const reqData = { ...req.body, ...req.query, ...req.params };
-      const users = await User.find({ isDeleted: false })
+
+      const searchQuery = buildMongoFilter(reqData, {
+        allowedFields: ['email', 'city', 'country', 'state', 'zipCode', 'isDeleted', 'isActive'],
+        baseQuery: { isDeleted: false, isActive: true },
+        searchFields: ['name', 'email', 'phone'],
+      });
+
+      const users = await User.find(searchQuery)
         .select('-password -otp -otpExpiresAt -createdBy')
         .sort({ createdAt: -1 });
 
@@ -102,6 +114,14 @@ class UserController {
         if (existingUser) {
           return next(ApiError.badRequest(USER_ERROR_MESSAGES.USER_ALREADY_EXISTS));
         }
+      }
+      if (updateData.isAdmin) {
+        const exitsAdmin = await User.findOne({
+          isAdmin: true,
+          isDeleted: false,
+          _id: { $ne: userId },
+        });
+        if (exitsAdmin) return next(ApiError.badRequest(USER_ERROR_MESSAGES.ADMIN_ALREADY_EXITS));
       }
       await User.findByIdAndUpdate(userId, updateData, {
         new: true,
