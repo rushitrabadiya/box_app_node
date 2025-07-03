@@ -44,3 +44,11 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction): voi
   }
   next();
 };
+
+export const isAdmin = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.user || !req.user.isAdmin) {
+    res.status(StatusCode.FORBIDDEN).json({ error: AUTH_ERROR_MESSAGES.NOT_ADMIN });
+    return;
+  }
+  next();
+};

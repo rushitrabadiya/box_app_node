@@ -18,4 +18,10 @@ export enum AUTH_ERROR_MESSAGES {
   USER_NOT_VERIFIED = 'User not verified',
   INVALID_REFRESH_TOKEN = 'Invalid refresh token',
   MISSING_REFRESH_TOKEN = 'Missing refresh token',
+  NOT_ADMIN = 'You are not an admin',
 }
+
+export const CATEGORY_ERROR_MESSAGES = {
+  CATEGORY_ALREADY_EXISTS: 'Category with this name already exists.',
+  CATEGORY_NOT_FOUND: 'Category not found.',
+};

@@ -20,3 +20,10 @@ export enum USER_SUCCESS_MESSAGES {
   USER_DELETED = 'User deleted successfully',
   USER_LOGOUT_SUCCESS = 'User logged out successfully',
 }
+
+export const CATEGORY_SUCCESS_MESSAGES = {
+  CATEGORY_CREATED: 'Category created successfully.',
+  CATEGORY_FETCHED: 'Category(s) retrieved successfully.',
+  CATEGORY_UPDATED: 'Category updated successfully.',
+  CATEGORY_DELETED: 'Category deleted successfully.',
+};
