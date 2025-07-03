@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 import { ICategories } from '../../interfaces/categories.interface';
 
 export interface ICategoriesDocument extends Document, ICategories {
@@ -14,6 +14,9 @@ const categoriesSchema = new Schema<ICategoriesDocument>(
     isActive: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
     img: { type: String, required: false },
+    createdBy: { type: Types.ObjectId, ref: 'User', required: false },
+    updatedBy: { type: Types.ObjectId, ref: 'User', required: false },
+    deletedBy: { type: Types.ObjectId, ref: 'User', required: false },
   },
 
   { timestamps: true },

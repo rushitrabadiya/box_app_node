@@ -25,3 +25,7 @@ export const CATEGORY_ERROR_MESSAGES = {
   CATEGORY_ALREADY_EXISTS: 'Category with this name already exists.',
   CATEGORY_NOT_FOUND: 'Category not found.',
 };
+
+export const GROUND_REGISTRATION_ERROR_MESSAGES = {
+  NOT_FOUND: 'Ground registration not found.',
+};

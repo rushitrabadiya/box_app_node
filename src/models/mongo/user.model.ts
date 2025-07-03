@@ -46,6 +46,11 @@ const userSchema = new Schema<IUserDocument>(
     otp: { type: String, default: null },
     otpExpiresAt: { type: Date },
     isAdmin: { type: Boolean, default: false },
+
+    // From IBaseModel
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+    updatedBy: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+    deletedBy: { type: Schema.Types.ObjectId, ref: 'User', required: false },
   },
 
   { timestamps: true },

@@ -27,3 +27,9 @@ export const CATEGORY_SUCCESS_MESSAGES = {
   CATEGORY_UPDATED: 'Category updated successfully.',
   CATEGORY_DELETED: 'Category deleted successfully.',
 };
+export const GROUND_REGISTRATION_SUCCESS_MESSAGES = {
+  CREATED: 'Ground registration created successfully.',
+  FETCHED: 'Ground registration(s) fetched successfully.',
+  UPDATED: 'Ground registration updated successfully.',
+  DELETED: 'Ground registration deleted successfully.',
+};

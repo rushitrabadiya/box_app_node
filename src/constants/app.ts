@@ -16,3 +16,9 @@ export const FIFTEEN_MINUTES_MS = 15 * MINUTE_MS;
 export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 export const OTP_EXPIRY_MINUTES = 5 as const;
+
+export const GROUND_REGISTRATION_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+} as const;
