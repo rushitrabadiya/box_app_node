@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IBaseModel } from './base.interface';
 
 // MongoDB User Interface

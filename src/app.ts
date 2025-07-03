@@ -1,10 +1,13 @@
 import express from 'express';
 import routes from './routes';
+import cors from 'cors';
 import { logger } from './middleware/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { applySecurity } from './middleware/security';
 
 export const app = express();
+
+app.use(cors());
 
 // security & perf helpers
 applySecurity(app);
