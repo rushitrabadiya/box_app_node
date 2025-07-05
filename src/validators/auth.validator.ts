@@ -124,6 +124,24 @@ class AuthValidator {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
   }
+  async resetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const schema = Joi.object({
+        token: Joi.string().required(),
+      });
+
+      const { error } = schema.validate({ ...req.body, ...req.query, ...req.params }, options);
+
+      if (error) {
+        const errorMessage = error.details.map((details) => details.message).join(', ');
+        return next(ApiError.badRequest(errorMessage));
+      }
+
+      return next();
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
   async validateForgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({

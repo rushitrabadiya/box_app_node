@@ -1,7 +1,8 @@
 import { omit } from './../utils/common';
 import { Request, Response, NextFunction } from 'express';
-import { MINUTE_MS, OTP_EXPIRY_MINUTES } from '../constants/app';
+import { MINUTE_MS, OTP_EXPIRY_MINUTES, TOKEN_TYPES } from '../constants/app';
 import { sendSuccess } from '../utils/apiResponse';
+import crypto from 'crypto';
 import { ApiError } from '../utils/apiError';
 import {
   comparePassword,
@@ -19,6 +20,7 @@ import { User } from '../models/mongo/user.model';
 import { generateOtp } from '../utils/common';
 import { StatusCode } from '../constants/statusCodes';
 import { buildResetPasswordEmail } from '../utils/mailer';
+import { TokenModel } from '../models/mongo/token.model';
 
 export class AuthController {
   async requestOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -142,6 +144,20 @@ export class AuthController {
       const accessToken = signAccessToken(user.id);
       const refreshToken = signRefreshToken(user.id);
 
+      const REFRESH_TOKEN_VALIDITY_MINUTES: number = parseInt(
+        process.env.REFRESH_TOKEN_EXPIRY || '7d',
+        10,
+      );
+      // Store refresh token in the database
+      await TokenModel.create({
+        userId: user.id,
+        token: crypto.createHash('sha256').update(refreshToken).digest('hex'),
+        expiryDate: new Date(Date.now() + REFRESH_TOKEN_VALIDITY_MINUTES * MINUTE_MS),
+        name: TOKEN_TYPES.REFRESH,
+        createdBy: user.id,
+        updatedBy: user.id,
+      });
+
       sendSuccess(
         res,
         {
@@ -181,6 +197,13 @@ export class AuthController {
         return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.MISSING_REFRESH_TOKEN));
       }
       //token remove
+      const hashedToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      const tokenDoc = await TokenModel.findOneAndDelete({
+        userId: req.user?._id,
+        expiryDate: { $gt: new Date() },
+        token: hashedToken,
+        name: TOKEN_TYPES.REFRESH,
+      });
       sendSuccess(res, null, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_LOGOUT_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
@@ -195,6 +218,15 @@ export class AuthController {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
       const { token, hashedToken, expiry } = generatePasswordResetToken();
+
+      await TokenModel.create({
+        userId: user._id,
+        token: hashedToken,
+        expiryDate: expiry,
+        name: TOKEN_TYPES.RESET_PASSWORD,
+        createdBy: user._id,
+        updatedBy: user._id,
+      });
 
       // Email details
       const validateTime = 15;
@@ -232,6 +264,37 @@ export class AuthController {
       await user.save();
 
       sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.PASSWORD_CHANGED);
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
+  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { token, newPassword } = req.body;
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+      const tokenDoc = await TokenModel.findOne({
+        token: hashedToken,
+        name: TOKEN_TYPES.RESET_PASSWORD,
+        expiryDate: { $gt: new Date() },
+      });
+      if (!tokenDoc) {
+        return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_RESET_TOKEN));
+      }
+
+      const user = await User.findById(tokenDoc.userId);
+      if (!user || user.isDeleted) {
+        return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
+      }
+
+      const hashedNewPassword = await hashPassword(newPassword);
+      user.password = hashedNewPassword;
+      await user.save();
+
+      await TokenModel.deleteOne({ _id: tokenDoc._id });
+
+      sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.PASSWORD_RESET_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }

@@ -9,6 +9,7 @@ router.post('/request-otp', authValidator.validateRequestOtp, authController.req
 router.post('/verify-otp', authValidator.validateVerifyOtp, authController.verifyOtp);
 router.post('/register', authValidator.validateRegister, authController.register);
 router.post('/login', authValidator.validateLogin, authController.login);
+router.post('/reset-password/:token', authValidator.resetToken, authController.resetPassword);
 router.post(
   '/refresh-token',
   authenticateJwt,

@@ -21,4 +21,10 @@ export const GROUND_REGISTRATION_STATUS = {
   PENDING: 'pending',
   APPROVED: 'approved',
   REJECTED: 'rejected',
+};
+
+export const TOKEN_TYPES = {
+  ACCESS: 'access',
+  REFRESH: 'refresh',
+  RESET_PASSWORD: 'reset_password',
 } as const;

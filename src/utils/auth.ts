@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { sign, Secret, verify, SignOptions, VerifyOptions } from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { createHashString, randomString } from './common';
-import { createHash } from 'crypto';
 import { MINUTE_MS } from '../constants/app';
+import crypto from 'crypto';
+import { randomString } from './common';
 
 dotenv.config();
 
@@ -76,8 +76,8 @@ export const generatePasswordResetToken = (
   hashedToken: string;
   expiry: Date;
 } => {
-  const token = randomString(32);
-  const hashedToken = createHashString(token);
-  const expiry = new Date(Date.now() + validateTime * MINUTE_MS);
+  const token = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  const expiry = new Date(Date.now() + validateTime * MINUTE_MS); // 15 mins
   return { token, hashedToken, expiry };
 };

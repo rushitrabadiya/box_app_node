@@ -19,6 +19,7 @@ export enum AUTH_ERROR_MESSAGES {
   INVALID_REFRESH_TOKEN = 'Invalid refresh token',
   MISSING_REFRESH_TOKEN = 'Missing refresh token',
   NOT_ADMIN = 'You are not an admin',
+  INVALID_RESET_TOKEN = 'Invalid reset token',
 }
 
 export const CATEGORY_ERROR_MESSAGES = {
