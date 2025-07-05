@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 import { buildOtpEmail } from './mailer';
-import dotenv from 'dotenv';
 
 // const transporter = nodemailer.createTransport({
 //   host: process.env.SMTP_HOST,
