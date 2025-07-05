@@ -168,7 +168,7 @@ class AuthValidator {
         refreshToken: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.body, options);
+      const { error } = schema.validate({ ...req.body, ...req.body, ...req.params }, options);
 
       if (error) {
         const errorMessage = error.details.map((details) => details.message).join(', ');

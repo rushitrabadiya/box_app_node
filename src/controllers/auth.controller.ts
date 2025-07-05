@@ -152,12 +152,12 @@ export class AuthController {
         sendSuccess(
           res,
           {
-            message: AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
             accessToken: null,
             refreshToken: null,
             isOtpVerified: false,
           },
           StatusCode.UNAUTHORIZED,
+          AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
         );
         return;
       }
@@ -182,12 +182,12 @@ export class AuthController {
       sendSuccess(
         res,
         {
-          message: AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
           accessToken,
           refreshToken,
           safeUser,
         },
         StatusCode.OK,
+        AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
       );
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
@@ -212,14 +212,14 @@ export class AuthController {
 
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { refreshToken } = req.body;
+      const { refreshToken } = { ...req.body, ...req.query, ...req.params };
 
       if (!refreshToken) {
         return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.MISSING_REFRESH_TOKEN));
       }
       //token remove
       const hashedToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
-      const tokenDoc = await TokenModel.findOneAndDelete({
+      await TokenModel.findOneAndDelete({
         userId: req.user?._id,
         expiryDate: { $gt: new Date() },
         token: hashedToken,
