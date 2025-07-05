@@ -12,6 +12,7 @@ export enum AUTH_SUCCESS_MESSAGES {
   PASSWORD_CHANGED = 'Password changed successfully',
   TOKEN_REFRESHED = 'Access token refreshed successfully',
   PASSWORD_RESET_SUCCESS = 'Password reset successfully',
+  PASSWORD_RESET_LINK_SENT = 'Password reset link sent successfully',
 }
 
 export enum USER_SUCCESS_MESSAGES {

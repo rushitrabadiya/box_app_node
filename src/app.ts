@@ -13,7 +13,14 @@ app.use(cors());
 applySecurity(app);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(logger);
 app.use('/api/v1', routes);
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Welcome to the Box API',
+    version: '1.0.0',
+  });
+});
 app.use(errorHandler);

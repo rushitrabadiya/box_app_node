@@ -13,7 +13,7 @@ export const SECOND_MS = SIXTY * (ONE_THOUSAND / SIXTY); // 1 second
 export const MINUTE_MS = SIXTY * ONE_THOUSAND; // 60 seconds
 export const FIFTEEN_MINUTES_MS = 15 * MINUTE_MS;
 
-export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+export const FRONTEND_URL = 'https://box-app-node.onrender.com/api/v1';
 
 export const OTP_EXPIRY_MINUTES = 5 as const;
 

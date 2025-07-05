@@ -138,7 +138,28 @@ export class AuthController {
       }
 
       if (!user.emailVerified) {
-        return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.PLEASE_VERIFY_YOUR_EMAIL_AND_PHONE));
+        const otp = generateOtp();
+        const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
+        await User.updateOne(
+          { _id: user.id },
+          {
+            otp,
+            otpExpiresAt,
+          },
+        );
+        // Send OTP via email
+        sendOtpEmail(email, otp, OTP_EXPIRY_MINUTES);
+        sendSuccess(
+          res,
+          {
+            message: AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
+            accessToken: null,
+            refreshToken: null,
+            isOtpVerified: false,
+          },
+          StatusCode.UNAUTHORIZED,
+        );
+        return;
       }
       const safeUser = omit(user.toObject(), ['otp', 'otpExpiresAt', 'password']);
       const accessToken = signAccessToken(user.id);
@@ -230,11 +251,15 @@ export class AuthController {
 
       // Email details
       const validateTime = 15;
-      const resetLink = `https://yourdomain.com/reset-password/${token}`;
+      // const resetLink = `https://yourdomain.com/reset-password/${token}`;
+      // const resetLink = `http://192.168.162.120:4000/api/v1/auth/reset-password/${token}`;
+      const resetLink = `${FRONTEND_URL}/auth/reset-password/${token}`;
+
       const subject = 'Reset Your Password';
       const html = buildResetPasswordEmail(resetLink, validateTime);
 
       sendEmail(user.email, subject, html);
+      sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.PASSWORD_RESET_LINK_SENT);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -271,8 +296,8 @@ export class AuthController {
 
   async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { token, newPassword } = req.body;
-      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+      const reqData = { ...req.body, ...req.query, ...req.params };
+      const hashedToken = crypto.createHash('sha256').update(reqData.token).digest('hex');
 
       const tokenDoc = await TokenModel.findOne({
         token: hashedToken,
@@ -288,13 +313,17 @@ export class AuthController {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
-      const hashedNewPassword = await hashPassword(newPassword);
+      const hashedNewPassword = await hashPassword(reqData.newPassword);
       user.password = hashedNewPassword;
       await user.save();
 
       await TokenModel.deleteOne({ _id: tokenDoc._id });
-
-      sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.PASSWORD_RESET_SUCCESS);
+      if (req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
+        res.send(`<h2>Password reset successful!</h2>`);
+      } else {
+        sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.PASSWORD_RESET_SUCCESS);
+      }
+      // sendSuccess(res, null, StatusCode.OK, AUTH_SUCCESS_MESSAGES.PASSWORD_RESET_SUCCESS);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }

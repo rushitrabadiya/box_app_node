@@ -2,6 +2,11 @@ interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
+  attachments?: {
+    filename: string;
+    path?: string; // for local file
+    url?: string; // for remote file (e.g., S3, Cloudinary)
+  }[];
 }
 
 // For now this is just a stub that logs to console.
@@ -19,9 +24,9 @@ export const buildOtpEmail = (otp: string, validateTime: number): string => `
     <h2 style="color: #333;">Email Verification Code</h2>
     <p style="font-size: 16px; color: #555;">Please use the following code to verify your email address:</p>
     <div style="margin: 20px 0; text-align: center;">
-      <span style="display: inline-block; background: #f4f4f4; padding: 15px 25px; font-size: 24px; font-weight: bold; color: #2c3e50; border-radius: 5px; letter-spacing: 5px;">${otp}</span>
+      <span style="display: inline-block; background: #f4f4f4; padding: 15px 25px; font-size: 24px; font-weight: bold; color:rgb(248, 93, 27); border-radius: 5px; letter-spacing: 5px;">${otp}</span>
     </div>
-    <p style="font-size: 14px; color: #999;">This code is valid for <strong>${validateTime} minutes</strong>.</p>
+    <p style="font-size: 14px; color: rgb(248, 93, 27);;">This code is valid for <strong>${validateTime} minutes</strong>.</p>
     <p style="font-size: 14px; color: #999;">If you did not request this, please ignore this email.</p>
     <hr style="margin-top: 30px;">
     <p style="font-size: 12px; color: #ccc;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>

@@ -128,6 +128,7 @@ class AuthValidator {
     try {
       const schema = Joi.object({
         token: Joi.string().required(),
+        newPassword: Joi.string().min(6).required(),
       });
 
       const { error } = schema.validate({ ...req.body, ...req.query, ...req.params }, options);
@@ -188,6 +189,25 @@ class AuthValidator {
       });
 
       const { error } = schema.validate(req.body, options);
+
+      if (error) {
+        const errorMessage = error.details.map((details) => details.message).join(', ');
+        return next(ApiError.badRequest(errorMessage));
+      }
+
+      return next();
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
+  async validateResetToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const schema = Joi.object({
+        token: Joi.string().required(),
+      });
+
+      const { error } = schema.validate(req.params, options);
 
       if (error) {
         const errorMessage = error.details.map((details) => details.message).join(', ');
