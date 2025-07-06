@@ -18,7 +18,7 @@ router.get('/', authenticateJwt, verifyUser, userValidator.getAllUsers, userCont
 router.put(
   '/:id',
   authenticateJwt,
-  verifyUser,
+  // verifyUser,
   userValidator.validateUpdateUser,
   userController.updateUser,
 );
