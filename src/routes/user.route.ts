@@ -19,7 +19,7 @@ router.put(
   '/:id',
   authenticateJwt,
   verifyUser,
-  userValidator.validateUser,
+  userValidator.validateUpdateUser,
   userController.updateUser,
 );
 router.delete('/:id', authenticateJwt, verifyUser, userController.deleteUser);
