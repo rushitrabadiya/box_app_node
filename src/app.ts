@@ -2,7 +2,7 @@ import express from 'express';
 import routes from './routes';
 import cors from 'cors';
 import { logger } from './middleware/logger';
-import { errorHandler } from './middleware/errorHandler';
+import { globalErrorHandler } from './middleware/errorHandler';
 import { applySecurity } from './middleware/security';
 
 export const app = express();
@@ -23,4 +23,6 @@ app.get('/', (req, res) => {
     version: '1.0.0',
   });
 });
-app.use(errorHandler);
+
+app.use(globalErrorHandler);
+// app.use(errorHandler);

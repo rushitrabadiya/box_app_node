@@ -134,7 +134,7 @@ export class AuthController {
 
       const isPasswordValid = await comparePassword(password, user.password as string);
       if (!isPasswordValid) {
-        return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS));
+        return next(ApiError.badRequest(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS));
       }
 
       if (!user.emailVerified) {
@@ -157,9 +157,14 @@ export class AuthController {
             isOtpVerified: false,
           },
           StatusCode.UNAUTHORIZED,
-          AUTH_SUCCESS_MESSAGES.LOGIN_SUCCESS,
+          AUTH_ERROR_MESSAGES.PLEASE_VERIFY_YOUR_EMAIL_AND_PHONE,
         );
         return;
+        // return next(
+        //   ApiError.unauthorized(AUTH_ERROR_MESSAGES.PLEASE_VERIFY_YOUR_EMAIL_AND_PHONE, {
+        //     isOtpVerified: false,
+        //   }),
+        // );
       }
       const safeUser = omit(user.toObject(), ['otp', 'otpExpiresAt', 'password']);
       const accessToken = signAccessToken(user.id);
