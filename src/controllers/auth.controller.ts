@@ -132,7 +132,7 @@ export class AuthController {
         return next(ApiError.notFound(USER_ERROR_MESSAGES.USER_NOT_FOUND));
       }
 
-      const isPasswordValid = comparePassword(password, user.password as string);
+      const isPasswordValid = await comparePassword(password, user.password as string);
       if (!isPasswordValid) {
         return next(ApiError.unauthorized(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS));
       }
