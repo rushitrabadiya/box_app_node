@@ -14,6 +14,7 @@ export const MINUTE_MS = SIXTY * ONE_THOUSAND; // 60 seconds
 export const FIFTEEN_MINUTES_MS = 15 * MINUTE_MS;
 
 export const FRONTEND_URL = 'https://box-app-node.onrender.com/api/v1';
+export const SELF_URL = 'https://box-app-node.onrender.com/';
 
 export const OTP_EXPIRY_MINUTES = 5 as const;
 

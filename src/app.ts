@@ -4,6 +4,7 @@ import cors from 'cors';
 import { logger } from './middleware/logger';
 import { globalErrorHandler } from './middleware/errorHandler';
 import { applySecurity } from './middleware/security';
+import { SELF_URL } from './constants/app';
 
 export const app = express();
 
@@ -23,6 +24,15 @@ app.get('/', (req, res) => {
     version: '1.0.0',
   });
 });
+
+setInterval(
+  () => {
+    fetch(SELF_URL)
+      .then(() => console.log('✅ Self ping sent'))
+      .catch((err) => console.error('❌ Self ping failed:', err.message));
+  },
+  1000 * 60 * 1,
+);
 
 app.use(globalErrorHandler);
 // app.use(errorHandler);
