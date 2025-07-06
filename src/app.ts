@@ -31,7 +31,7 @@ setInterval(
       .then(() => console.log('✅ Self ping sent'))
       .catch((err) => console.error('❌ Self ping failed:', err.message));
   },
-  1000 * 60 * 1,
+  1000 * 60 * 5,
 );
 
 app.use(globalErrorHandler);
