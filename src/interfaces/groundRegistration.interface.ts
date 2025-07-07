@@ -23,10 +23,10 @@ export interface IGroundRegistration extends IBaseModel {
   country: string;
   mobile: string;
   email: string;
-  coverImage: string;
-  images: ImageInterface[];
+  // coverImage: string;
+  // images: ImageInterface[];
   isBlocked: boolean;
-  categoryId: Types.ObjectId;
+  // categoryId: Types.ObjectId;
   status: GroundRegistrationStatus;
   isActive: boolean;
   isDeleted: boolean;

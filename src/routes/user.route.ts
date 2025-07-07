@@ -12,8 +12,8 @@ router.post(
   userValidator.validateUser,
   userController.createUser,
 );
-router.get('/:id', authenticateJwt, userValidator.getUserById, userController.getUser);
 router.get('/current', authenticateJwt, verifyUser, userController.getCurrentUser);
+router.get('/:id', authenticateJwt, userValidator.getUserById, userController.getUser);
 router.get('/', authenticateJwt, userValidator.getAllUsers, userController.getAllUsers);
 router.put(
   '/:id',

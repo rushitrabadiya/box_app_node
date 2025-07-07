@@ -22,20 +22,20 @@ class GroundRegistrationValidator {
           .pattern(/^[0-9]{10,15}$/)
           .required(),
         email: Joi.string().email().required(),
-        coverImage: Joi.string().uri().required(),
-        images: Joi.array()
-          .items(
-            Joi.object({
-              image: Joi.string().uri().required(),
-              isActive: Joi.boolean().required(),
-            }),
-          )
-          .optional(),
+        // coverImage: Joi.string().uri().required(),
+        // images: Joi.array()
+        //   .items(
+        //     Joi.object({
+        //       image: Joi.string().uri().required(),
+        //       isActive: Joi.boolean().required(),
+        //     }),
+        //   )
+        //   .optional(),
 
         isBlocked: Joi.boolean().default(false),
-        categoryId: Joi.string()
-          .regex(/^[0-9a-fA-F]{24}$/)
-          .required(),
+        // categoryId: Joi.string()
+        //   .regex(/^[0-9a-fA-F]{24}$/)
+        //   .required(),
 
         status: Joi.string()
           .valid(...Object.values(GROUND_REGISTRATION_STATUS))
@@ -83,9 +83,9 @@ class GroundRegistrationValidator {
         isDeleted: Joi.boolean().optional(),
         city: Joi.string().trim().optional(),
         state: Joi.string().trim().optional(),
-        categoryId: Joi.string()
-          .regex(/^[0-9a-fA-F]{24}$/)
-          .optional(),
+        // categoryId: Joi.string()
+        //   .regex(/^[0-9a-fA-F]{24}$/)
+        //   .optional(),
         createdBy: Joi.string()
           .regex(/^[0-9a-fA-F]{24}$/)
           .optional(),
