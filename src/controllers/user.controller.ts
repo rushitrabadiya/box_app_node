@@ -6,9 +6,6 @@ import { User } from '../models/mongo/user.model';
 import { StatusCode } from '../constants/statusCodes';
 import { USER_ERROR_MESSAGES } from '../constants/errorMessages';
 import { buildMongoFilter } from '../utils/queryBuilder';
-import { generateOtp } from '../utils/common';
-import { MINUTE_MS, OTP_EXPIRY_MINUTES } from '../constants/app';
-import { sendOtpEmail } from '../utils/email';
 
 class UserController {
   async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -118,17 +115,7 @@ class UserController {
           return next(ApiError.badRequest(USER_ERROR_MESSAGES.USER_ALREADY_EXISTS));
         }
         if (user.email !== updateData.email) {
-          updateData.emailVerified = false;
-          const otp = generateOtp();
-          const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
-          await User.updateOne(
-            { _id: user.id },
-            {
-              otp,
-              otpExpiresAt,
-            },
-          );
-          sendOtpEmail(updateData.email, otp, OTP_EXPIRY_MINUTES);
+          if (!updateData.emailVerified) updateData.emailVerified = false;
         }
       }
       if (updateData.isAdmin) {
