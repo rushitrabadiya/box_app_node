@@ -6,6 +6,9 @@ import { User } from '../models/mongo/user.model';
 import { StatusCode } from '../constants/statusCodes';
 import { USER_ERROR_MESSAGES } from '../constants/errorMessages';
 import { buildMongoFilter } from '../utils/queryBuilder';
+import { generateOtp } from '../utils/common';
+import { MINUTE_MS, OTP_EXPIRY_MINUTES } from '../constants/app';
+import { sendOtpEmail } from '../utils/email';
 
 class UserController {
   async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -126,11 +129,23 @@ class UserController {
         });
         if (exitsAdmin) return next(ApiError.badRequest(USER_ERROR_MESSAGES.ADMIN_ALREADY_EXITS));
       }
-      await User.findByIdAndUpdate(userId, updateData, {
+      const updateUser = await User.findByIdAndUpdate(userId, updateData, {
         new: true,
       });
-
-      sendSuccess(res, user, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_UPDATED);
+      if (updateUser?.emailVerified === false) {
+        const otp = generateOtp();
+        const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * MINUTE_MS);
+        await User.updateOne(
+          { _id: user.id },
+          {
+            otp,
+            otpExpiresAt,
+          },
+        );
+        // Send OTP via email
+        sendOtpEmail(updateUser.email, otp, OTP_EXPIRY_MINUTES);
+      }
+      sendSuccess(res, updateUser, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_UPDATED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
