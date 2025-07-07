@@ -49,9 +49,9 @@ class UserValidator {
         name: Joi.string().min(2).optional(),
         email: Joi.string().email().optional(),
         password: Joi.string().min(6), // Optional per interface (with ?)
-        isActive: Joi.boolean().default(true),
-        isDeleted: Joi.boolean().default(false),
-        isAdmin: Joi.boolean().default(false),
+        isActive: Joi.boolean,
+        isDeleted: Joi.boolean(),
+        isAdmin: Joi.boolean(),
         phone: Joi.string()
           .pattern(/^\d{10,15}$/)
           .optional(),
@@ -63,9 +63,9 @@ class UserValidator {
         country: Joi.string().optional(),
         state: Joi.string().optional(),
         zipCode: Joi.string().optional(),
-        emailVerified: Joi.boolean().default(false),
-        phoneVerified: Joi.boolean().default(false),
-        isBlocked: Joi.boolean().default(false),
+        emailVerified: Joi.boolean(),
+        phoneVerified: Joi.boolean(),
+        isBlocked: Joi.boolean(),
         otp: Joi.string().optional(),
         otpExpiresAt: Joi.date().optional(),
       });
