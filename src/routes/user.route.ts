@@ -8,13 +8,13 @@ const router = Router();
 router.post(
   '/',
   authenticateJwt,
-  verifyUser,
+  // verifyUser,
   userValidator.validateUser,
   userController.createUser,
 );
-router.get('/:id', authenticateJwt, verifyUser, userValidator.getUserById, userController.getUser);
+router.get('/:id', authenticateJwt, userValidator.getUserById, userController.getUser);
 router.get('/current', authenticateJwt, verifyUser, userController.getCurrentUser);
-router.get('/', authenticateJwt, verifyUser, userValidator.getAllUsers, userController.getAllUsers);
+router.get('/', authenticateJwt, userValidator.getAllUsers, userController.getAllUsers);
 router.put(
   '/:id',
   authenticateJwt,
