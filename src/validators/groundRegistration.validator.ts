@@ -9,8 +9,8 @@ class GroundRegistrationValidator {
     try {
       const schema = Joi.object({
         name: Joi.string().trim().required(),
-        owner: Joi.string().trim().required(),
-        subtitle: Joi.string().trim().required(),
+        owner: Joi.string().trim().optional(),
+        subtitle: Joi.string().trim().optional(),
         description: Joi.string().allow('', null).optional(),
         location: Joi.string().trim().required(),
         address1: Joi.string().trim().required(),

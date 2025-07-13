@@ -17,7 +17,7 @@ export interface IGroundRegistrationDocument extends Document, IGroundRegistrati
 const groundRegistrationSchema = new Schema<IGroundRegistrationDocument>(
   {
     name: { type: String, required: true, trim: true },
-    subtitle: { type: String, required: true, trim: true },
+    subtitle: { type: String, required: false, trim: true },
     description: { type: String, trim: true },
     location: { type: String, required: false, trim: true },
     address1: { type: String, required: true, trim: true },
