@@ -39,7 +39,9 @@ class GroundRegistrationController {
 
   async getAllGrounds(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const filters = buildMongoFilter(req.query, {
+      const reqData = { ...req.query, ...req.body, ...req.params };
+      if (!reqData.owner && !req.user?.isAdmin) reqData.owner = req.user?._id;
+      const filters = buildMongoFilter(reqData, {
         allowedFields: ['categoryId', 'city', 'state', 'status', 'isActive', 'owner'],
         baseQuery: { isDeleted: false },
         searchFields: ['name', 'city', 'state', 'email', 'mobile'],
