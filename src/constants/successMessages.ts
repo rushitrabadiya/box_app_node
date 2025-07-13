@@ -35,3 +35,17 @@ export const GROUND_REGISTRATION_SUCCESS_MESSAGES = {
   UPDATED: 'Ground registration updated successfully.',
   DELETED: 'Ground registration deleted successfully.',
 };
+
+export const GROUND_HAS_CATEGORIES_SUCCESS_MESSAGES = {
+  CREATED: 'Ground category created successfully.',
+  FETCHED: 'Ground category(s) fetched successfully.',
+  UPDATED: 'Ground category updated successfully.',
+  DELETED: 'Ground category deleted successfully.',
+};
+
+export const SAMPLE_SUCCESS_MESSAGES = {
+  CREATED: 'Sample created successfully.',
+  FETCHED: 'Sample(s) fetched successfully.',
+  UPDATED: 'Sample updated successfully.',
+  DELETED: 'Sample deleted successfully.',
+};

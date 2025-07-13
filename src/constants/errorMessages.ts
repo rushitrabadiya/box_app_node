@@ -30,3 +30,17 @@ export const CATEGORY_ERROR_MESSAGES = {
 export const GROUND_REGISTRATION_ERROR_MESSAGES = {
   NOT_FOUND: 'Ground registration not found.',
 };
+
+export const GROUND_HAS_CATEGORIES_ERROR_MESSAGES = {
+  NOT_FOUND: 'Ground category not found.',
+  ALREADY_EXISTS: 'Ground category with this name already exists.',
+  INVALID_CATEGORY: 'Invalid category ID provided.',
+  INVALID_GROUND: 'Invalid ground ID provided.',
+  INVALID_WORKING_DAY: 'Invalid working day data provided.',
+};
+
+export const SAMPLE_ERROR_MESSAGES = {
+  NOT_FOUND: 'Sample not found.',
+  ALREADY_EXISTS: 'Sample with this name already exists.',
+  INVALID_DATA: 'Invalid data provided for sample.',
+};

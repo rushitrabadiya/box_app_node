@@ -13,6 +13,8 @@ class GroundRegistrationController {
     try {
       const data = { ...req.body, createdBy: req.user?._id };
 
+      if (!data.owner) data.owner = req.user?._id;
+
       const ground = await GroundRegistration.create(data);
       sendSuccess(res, ground, StatusCode.CREATED, GROUND_REGISTRATION_SUCCESS_MESSAGES.CREATED);
     } catch (err) {
@@ -38,7 +40,7 @@ class GroundRegistrationController {
   async getAllGrounds(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const filters = buildMongoFilter(req.query, {
-        allowedFields: ['categoryId', 'city', 'state', 'status', 'isActive'],
+        allowedFields: ['categoryId', 'city', 'state', 'status', 'isActive', 'owner'],
         baseQuery: { isDeleted: false },
         searchFields: ['name', 'city', 'state', 'email', 'mobile'],
       });

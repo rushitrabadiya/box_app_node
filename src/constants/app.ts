@@ -24,6 +24,40 @@ export const GROUND_REGISTRATION_STATUS = {
   REJECTED: 'rejected',
 };
 
+export const GROUND_HAS_CATEGORIES_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+};
+
+export const WEEK_DAYS_ENUM = {
+  MONDAY: 'monday',
+  TUESDAY: 'tuesday',
+  WEDNESDAY: 'wednesday',
+  THURSDAY: 'thursday',
+  FRIDAY: 'friday',
+  SATURDAY: 'saturday',
+  SUNDAY: 'sunday',
+};
+
+export const BOOKING_STATUS = {
+  BOOKED: 'booked',
+  CANCELLED: 'cancelled',
+};
+
+export const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+};
+
+export const PAYMENT_METHODS = {
+  CREDIT_CARD: 'credit_card',
+  PAYPAL: 'paypal',
+  STRIPE: 'stripe',
+  CASH: 'cash',
+};
+
 export const TOKEN_TYPES = {
   ACCESS: 'access',
   REFRESH: 'refresh',

@@ -9,3 +9,13 @@ export interface IBaseModel extends Document {
   deletedBy?: string;
   deletedAt?: Date;
 }
+export type Frequency = 'minute' | 'hour' | 'day' | 'month';
+
+export interface FlexibleCronJob {
+  name: string;
+  every: Frequency;
+  time?: string; // Format: 'HH:mm'
+  dayOfMonth?: number; // Required only for monthly
+  job: () => void;
+  allowedEnvironments: string[];
+}

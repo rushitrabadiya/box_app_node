@@ -1,20 +1,15 @@
-import { IPgBase } from './pg/base.interface';
+import { Types } from 'mongoose';
+import { IBaseModel } from './base.interface';
 
-export interface ISlot extends IPgBase {
-  id: number;
-  slotNumber: number;
-  status: 'available' | 'occupied' | 'maintenance';
-  vehicleType: 'car' | 'bike' | 'truck';
+// MongoDB Slot Interface
+export interface ISlot extends IBaseModel {
+  groundHasCategoryId: Types.ObjectId;
+  date: Date;
+  day: string;
+  startTime: string; // "10:00"
+  endTime: string; // "11:00"
   price: number;
-  isReserved: boolean;
-  reservedUntil?: Date;
-  vehicleId?: string;
-  userId?: number;
-  lastOccupiedAt?: Date;
-  lastVacatedAt?: Date;
-  totalOccupancyTime?: number;
-  totalRevenue?: number;
-  notes?: string;
+  isActive: boolean;
+  isBooked: boolean; // true = already booked
+  isDeleted: boolean;
 }
-
-export interface ISlotCreation extends Omit<ISlot, 'id' | 'createdAt' | 'updatedAt' | 'lastOccupiedAt' | 'lastVacatedAt' | 'totalOccupancyTime' | 'totalRevenue'> {}

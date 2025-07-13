@@ -9,6 +9,7 @@ class GroundRegistrationValidator {
     try {
       const schema = Joi.object({
         name: Joi.string().trim().required(),
+        owner: Joi.string().trim().required(),
         subtitle: Joi.string().trim().required(),
         description: Joi.string().allow('', null).optional(),
         location: Joi.string().trim().required(),
@@ -22,7 +23,7 @@ class GroundRegistrationValidator {
           .pattern(/^[0-9]{10,15}$/)
           .required(),
         email: Joi.string().email().required(),
-        // coverImage: Joi.string().uri().required(),
+        coverImage: Joi.string().required(),
         // images: Joi.array()
         //   .items(
         //     Joi.object({
@@ -83,12 +84,10 @@ class GroundRegistrationValidator {
         isDeleted: Joi.boolean().optional(),
         city: Joi.string().trim().optional(),
         state: Joi.string().trim().optional(),
+        owner: Joi.string().trim().optional(),
         // categoryId: Joi.string()
         //   .regex(/^[0-9a-fA-F]{24}$/)
         //   .optional(),
-        createdBy: Joi.string()
-          .regex(/^[0-9a-fA-F]{24}$/)
-          .optional(),
         isBlocked: Joi.boolean().optional(),
         status: Joi.string()
           .valid(...Object.values(GROUND_REGISTRATION_STATUS))
@@ -113,6 +112,7 @@ class GroundRegistrationValidator {
         id: Joi.string().required(),
 
         name: Joi.string().trim().optional(),
+        owner: Joi.string().trim().optional(),
         subtitle: Joi.string().trim().optional(),
         description: Joi.string().allow('', null).optional(),
         location: Joi.string().trim().optional(),

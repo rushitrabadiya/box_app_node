@@ -5,6 +5,7 @@ import { logger } from './middleware/logger';
 import { globalErrorHandler } from './middleware/errorHandler';
 import { applySecurity } from './middleware/security';
 import { SELF_URL } from './constants/app';
+import './helpers/corn-jobs';
 
 export const app = express();
 

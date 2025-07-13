@@ -3,16 +3,16 @@ import { IGroundRegistration, ImageInterface } from '../../interfaces/groundRegi
 import { GROUND_REGISTRATION_STATUS } from '../../constants/app';
 
 export interface IGroundRegistrationDocument extends Document, IGroundRegistration {
-  images: ImageInterface[];
+  // images: ImageInterface[];
 }
 
-const imageSchema = new Schema<ImageInterface>(
-  {
-    image: { type: String, required: true },
-    isActive: { type: Boolean, default: true },
-  },
-  { _id: false },
-);
+// const imageSchema = new Schema<ImageInterface>(
+//   {
+//     image: { type: String, required: true },
+//     isActive: { type: Boolean, default: true },
+//   },
+//   { _id: false },
+// );
 
 const groundRegistrationSchema = new Schema<IGroundRegistrationDocument>(
   {
@@ -28,10 +28,11 @@ const groundRegistrationSchema = new Schema<IGroundRegistrationDocument>(
     country: { type: String, required: true, trim: true },
     mobile: { type: String, required: false, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
-    // coverImage: { type: String, required: true, trim: true },
+    coverImage: { type: String, required: true, trim: true },
     // images: { type: [imageSchema], default: [] },
     isBlocked: { type: Boolean, default: false },
     // categoryId: { type: Schema.Types.ObjectId, ref: 'Categories', required: true },
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     status: {
       type: String,
       enum: Object.values(GROUND_REGISTRATION_STATUS),
@@ -54,6 +55,7 @@ groundRegistrationSchema.index(
   { partialFilterExpression: { isDeleted: false } },
 );
 groundRegistrationSchema.index({ isActive: 1 });
+groundRegistrationSchema.index({ owner: 1 }, { partialFilterExpression: { isDeleted: false } });
 groundRegistrationSchema.index({ isDeleted: 1 });
 
 export const GroundRegistration = model<IGroundRegistrationDocument>(
