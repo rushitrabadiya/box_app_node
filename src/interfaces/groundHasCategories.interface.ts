@@ -7,12 +7,19 @@ export type GroundCategoriesStatus =
 
 export type WeekDaysEnum = (typeof WEEK_DAYS_ENUM)[keyof typeof WEEK_DAYS_ENUM];
 
+// Price Interface
+export interface IPriceInterface {
+  startTime: string; // "10:00"
+  endTime: string; // "11:00"
+  typeWisePrice: number;
+  isActive: boolean;
+}
 // Working Day Interface
 export interface IWorkingDay {
   day: WeekDaysEnum;
   startTime: string;
   endTime: string;
-  price: number;
+  prices: IPriceInterface[];
   isActive: boolean;
 }
 // Image Interface

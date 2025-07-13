@@ -15,7 +15,16 @@ class GroundHasCategoriesValidator {
           startTime: Joi.string().optional().allow(null), // Ideally in HH:mm format
           endTime: Joi.string().optional().allow(null), // Ideally in HH:mm format
           isActive: Joi.boolean().optional(),
-          price: Joi.number().min(0).required(),
+          prices: Joi.array()
+            .items(
+              Joi.object({
+                startTime: Joi.string().required(),
+                endTime: Joi.string().required(),
+                typeWisePrice: Joi.number().required().min(0),
+                isActive: Joi.boolean().optional(),
+              }),
+            )
+            .required(),
         }),
       );
 
@@ -115,7 +124,16 @@ class GroundHasCategoriesValidator {
             .required(),
           startTime: Joi.string().optional(),
           endTime: Joi.string().optional(),
-          price: Joi.number().min(0).optional(),
+          prices: Joi.array()
+            .items(
+              Joi.object({
+                startTime: Joi.string().required(),
+                endTime: Joi.string().required(),
+                typeWisePrice: Joi.number().required().min(0),
+                isActive: Joi.boolean().optional(),
+              }),
+            )
+            .optional(),
           isActive: Joi.boolean().optional(),
         }),
       );

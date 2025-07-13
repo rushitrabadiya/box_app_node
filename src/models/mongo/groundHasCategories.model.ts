@@ -3,7 +3,6 @@ import { IGroundHasCategories } from '../../interfaces/groundHasCategories.inter
 import { GROUND_HAS_CATEGORIES_STATUS, WEEK_DAYS_ENUM } from '../../constants/app';
 
 export interface IGroundHasCategoriesDocument extends Document, IGroundHasCategories {}
-
 const GroundHasCategoriesSchema = new Schema<IGroundHasCategoriesDocument>(
   {
     groundId: { type: Schema.Types.ObjectId, ref: 'GroundRegistration', required: true },
@@ -34,7 +33,20 @@ const GroundHasCategoriesSchema = new Schema<IGroundHasCategoriesDocument>(
         startTime: { type: String, required: true },
         endTime: { type: String, required: true },
         isActive: { type: Boolean, default: true },
-        price: { type: Number, min: 0, default: 0 },
+        prices: [
+          {
+            starTime: {
+              type: String,
+              required: true,
+            },
+            endTime: {
+              type: String,
+              required: true,
+            },
+            typeWisePrice: { type: Number, required: true, min: 0 },
+            isActive: { type: Boolean, default: true },
+          },
+        ],
       },
     ],
     coverImage: { type: String, required: true, trim: true },
