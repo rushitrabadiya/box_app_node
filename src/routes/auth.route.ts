@@ -32,7 +32,7 @@ router.get('/reset-password/:token', (req, res) => {
 router.post('/reset-password/:token', authValidator.resetToken, authController.resetPassword);
 router.post(
   '/refresh-token',
-  authenticateJwt,
+  // authenticateJwt,
   authValidator.validateRefreshToken,
   authController.refreshToken,
 );
