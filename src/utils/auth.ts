@@ -1,7 +1,11 @@
 import bcrypt from 'bcryptjs';
 import { sign, Secret, verify, SignOptions, VerifyOptions } from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { MINUTE_MS } from '../constants/app';
+import {
+  ACCESS_TOKEN_EXPIRY_CALCULATION,
+  MINUTE_MS,
+  REFRESH_TOKEN_EXPIRY_CALCULATION,
+} from '../constants/app';
 import crypto from 'crypto';
 import { randomString } from './common';
 
@@ -9,8 +13,8 @@ dotenv.config();
 
 // Environment variables
 const JWT_SECRET: Secret = process.env.JWT_SECRET || 'your-secret-key';
-const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '15m';
-const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '15';
+const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7';
 const SALT_ROUNDS = process.env.SALT_ROUNDS || 10;
 
 // Hash password
@@ -27,7 +31,8 @@ export const comparePassword = async (password: string, hash: string): Promise<b
 export const signAccessToken = (userId: string | number): string => {
   const payload = { sub: userId, type: 'access' };
   const options: SignOptions = {
-    expiresIn: ACCESS_TOKEN_EXPIRY as unknown as number,
+    expiresIn: ((ACCESS_TOKEN_EXPIRY as unknown as number) *
+      ACCESS_TOKEN_EXPIRY_CALCULATION) as unknown as number,
     algorithm: 'HS256',
   };
   return sign(payload, JWT_SECRET, options);
@@ -37,7 +42,8 @@ export const signAccessToken = (userId: string | number): string => {
 export const signRefreshToken = (userId: string | number): string => {
   const payload = { sub: userId, type: 'refresh' };
   const options: SignOptions = {
-    expiresIn: REFRESH_TOKEN_EXPIRY as unknown as number,
+    expiresIn: ((REFRESH_TOKEN_EXPIRY as unknown as number) *
+      REFRESH_TOKEN_EXPIRY_CALCULATION) as unknown as number,
     algorithm: 'HS256',
   };
   return sign(payload, JWT_SECRET, options);
