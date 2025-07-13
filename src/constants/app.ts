@@ -7,8 +7,8 @@ export const SECOND_MS = SIXTY * (ONE_THOUSAND / SIXTY); // 1 second
 export const MINUTE_MS = SIXTY * ONE_THOUSAND; // 60 seconds
 export const FIFTEEN_MINUTES_MS = 15 * MINUTE_MS;
 
-export const ACCESS_TOKEN_EXPIRY_CALCULATION = MINUTE_MS;
-export const REFRESH_TOKEN_EXPIRY_CALCULATION = SIXTY * SIXTY * 24;
+export const REFRESH_TOKEN_EXPIRY_CALCULATION = MINUTE_MS;
+export const ACCESS_TOKEN_EXPIRY_CALCULATION = SIXTY * SIXTY * 24;
 
 // Common defaults for paginated API responses
 export enum PAGINATION {
