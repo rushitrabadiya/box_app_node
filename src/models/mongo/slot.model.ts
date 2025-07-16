@@ -35,3 +35,12 @@ SlotSchema.index({ isActive: 1 });
 SlotSchema.index({ isDeleted: 1 });
 
 export const Slot = model<ISlotDocument>('Slot', SlotSchema);
+
+// export const initSlotIndexes = async () => {
+//   try {
+//     await Slot.syncIndexes(); // Ensures indexes exist or are updated
+//     console.log('[Slot] Indexes synced');
+//   } catch (err) {
+//     console.error('[Slot] Error syncing indexes:', err);
+//   }
+// };

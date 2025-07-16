@@ -36,7 +36,7 @@ const GroundHasCategoriesSchema = new Schema<IGroundHasCategoriesDocument>(
         isActive: { type: Boolean, default: true },
         prices: [
           {
-            starTime: {
+            startTime: {
               type: String,
               required: true,
             },
@@ -69,10 +69,10 @@ const GroundHasCategoriesSchema = new Schema<IGroundHasCategoriesDocument>(
 
 GroundHasCategoriesSchema.index({ isActive: 1 });
 GroundHasCategoriesSchema.index({ isDeleted: 1 });
-GroundHasCategoriesSchema.index(
-  { groundId: 1, categoryId: 1 },
-  { partialFilterExpression: { isDeleted: false }, unique: true },
-);
+// GroundHasCategoriesSchema.index(
+//   { groundId: 1, categoryId: 1 },
+//   { partialFilterExpression: { isDeleted: false }, unique: true },
+// );
 
 GroundHasCategoriesSchema.pre('save', function (next) {
   try {
@@ -87,32 +87,34 @@ GroundHasCategoriesSchema.pre('save', function (next) {
 
         // 2. Validate prices array exists
         if (!Array.isArray(wd.prices) || wd.prices.length === 0) {
-          throw new Error(`⛔ Prices not provided for working day [${wd.day}]`);
+          throw new Error(`Prices not provided for working day [${wd.day}]`);
         }
 
         // 3. Filter inactive prices and sort
         const sortedPrices = wd.prices
           .filter((p: any) => p.isActive !== false)
-          .sort((a: any, b: any) => moment(a.starTime, 'HH:mm').diff(moment(b.starTime, 'HH:mm')));
+          .sort((a: any, b: any) =>
+            moment(a.startTime, 'HH:mm').diff(moment(b.startTime, 'HH:mm')),
+          );
 
-        const firstPriceStart = moment(sortedPrices[0].starTime, 'HH:mm');
+        const firstPriceStart = moment(sortedPrices[0].startTime, 'HH:mm');
         const lastPriceEnd = moment(sortedPrices[sortedPrices.length - 1].endTime, 'HH:mm');
 
         // 4. Check that first & last price blocks match the working day time
         if (!firstPriceStart.isSame(wdStart) || !lastPriceEnd.isSame(wdEnd)) {
           throw new Error(
-            `❌ Price time range [${sortedPrices[0].starTime} - ${sortedPrices[sortedPrices.length - 1].endTime}] does not match working day time [${wd.startTime} - ${wd.endTime}] for ${wd.day}`,
+            `Price time range [${sortedPrices[0].startTime} - ${sortedPrices[sortedPrices.length - 1].endTime}] does not match working day time [${wd.startTime} - ${wd.endTime}] for ${wd.day}`,
           );
         }
 
         // 5. Ensure price time blocks are continuous (optional)
         for (let i = 0; i < sortedPrices.length - 1; i++) {
           const currentEnd = moment(sortedPrices[i].endTime, 'HH:mm');
-          const nextStart = moment(sortedPrices[i + 1].starTime, 'HH:mm');
+          const nextStart = moment(sortedPrices[i + 1].startTime, 'HH:mm');
 
           if (!currentEnd.isSame(nextStart)) {
             throw new Error(
-              `❗ Prices in working day [${wd.day}] are not continuous between ${sortedPrices[i].endTime} and ${sortedPrices[i + 1].starTime}`,
+              `❗ Prices in working day [${wd.day}] are not continuous between ${sortedPrices[i].endTime} and ${sortedPrices[i + 1].startTime}`,
             );
           }
         }

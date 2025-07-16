@@ -25,9 +25,9 @@ class UserValidator {
         zipCode: Joi.string().required(),
         emailVerified: Joi.boolean().default(false),
         phoneVerified: Joi.boolean().default(false),
-        isBlocked: Joi.boolean().default(false),
-        otp: Joi.string().required(),
-        otpExpiresAt: Joi.date().required(),
+        // isBlocked: Joi.boolean().default(false),
+        // otp: Joi.string().required(),
+        // otpExpiresAt: Joi.date().required(),
       });
 
       const { error } = schema.validate(req.body);
@@ -42,6 +42,42 @@ class UserValidator {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
   }
+  async validateRegisterUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const schema = Joi.object({
+        name: Joi.string().min(2).required(),
+        email: Joi.string().email().required(),
+        phone: Joi.string()
+          .pattern(/^\d{10,15}$/)
+          .required(),
+        address: Joi.string().allow('', null).optional(),
+        gender: Joi.string().valid('male', 'female', 'other').optional(),
+        dateOfBirth: Joi.date().optional(),
+        profilePicture: Joi.string().uri().allow('', null),
+        city: Joi.string().optional(),
+        country: Joi.string().optional(),
+        state: Joi.string().optional(),
+        zipCode: Joi.string().optional(),
+        emailVerified: Joi.boolean().default(false),
+        phoneVerified: Joi.boolean().default(false),
+        // isBlocked: Joi.boolean().default(false),
+        // otp: Joi.string().required(),
+        // otpExpiresAt: Joi.date().required(),
+      });
+
+      const { error } = schema.validate(req.body);
+
+      if (error) {
+        const errorMessage = error.details.map((details) => details.message).join(', ');
+        return next(ApiError.badRequest(errorMessage));
+      }
+
+      return next();
+    } catch (err) {
+      return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
+    }
+  }
+
   async validateUpdateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({
@@ -116,6 +152,9 @@ class UserValidator {
         country: Joi.string().optional(),
         state: Joi.string().optional(),
         zipCode: Joi.string().optional(),
+        isPaginated: Joi.boolean().optional(),
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).default(10),
       });
 
       const { error } = schema.validate(req.query);

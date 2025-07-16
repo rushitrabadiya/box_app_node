@@ -1,4 +1,3 @@
-import { Slot } from './../models/mongo/slot.model';
 import express from 'express';
 import { slotValidator } from '../validators/slot.validator';
 import { slotController } from '../controllers/slot.controller';

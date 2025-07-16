@@ -44,3 +44,9 @@ export const SAMPLE_ERROR_MESSAGES = {
   ALREADY_EXISTS: 'Sample with this name already exists.',
   INVALID_DATA: 'Invalid data provided for sample.',
 };
+export const SLOT_ERROR_MESSAGES = {
+  NOT_FOUND: 'Slot not found.',
+  ALREADY_EXISTS: 'Slot already exists for this ground and time.',
+  INVALID_DATA: 'Invalid data provided for slot.',
+  INVALID_GROUND: 'Invalid ground ID provided.',
+};

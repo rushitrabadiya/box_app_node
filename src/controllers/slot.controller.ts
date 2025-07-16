@@ -9,9 +9,10 @@ import moment from 'moment';
 import { Slot } from '../models/mongo/slot.model';
 
 // Replace with actual messages
-import { SAMPLE_SUCCESS_MESSAGES } from '../constants/successMessages';
-import { SAMPLE_ERROR_MESSAGES } from '../constants/errorMessages';
+import { SLOT_SUCCESS_MESSAGES } from '../constants/successMessages';
+import { SLOT_ERROR_MESSAGES } from '../constants/errorMessages';
 import { GroundHasCategories } from '../models/mongo/groundHasCategories.model';
+import { paginateQuery } from '../helpers/paginationHelper';
 
 class SlotController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -19,7 +20,7 @@ class SlotController {
       const data = { ...req.body, createdBy: req.user?._id };
 
       const doc = await Slot.create(data);
-      sendSuccess(res, doc, StatusCode.CREATED, SAMPLE_SUCCESS_MESSAGES.CREATED);
+      sendSuccess(res, doc, StatusCode.CREATED, SLOT_SUCCESS_MESSAGES.CREATED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -31,10 +32,10 @@ class SlotController {
       const doc = await Slot.findById(id);
 
       if (!doc || doc.isDeleted) {
-        return next(ApiError.notFound(SAMPLE_ERROR_MESSAGES.NOT_FOUND));
+        return next(ApiError.notFound(SLOT_ERROR_MESSAGES.NOT_FOUND));
       }
 
-      sendSuccess(res, doc, StatusCode.OK, SAMPLE_SUCCESS_MESSAGES.FETCHED);
+      sendSuccess(res, doc, StatusCode.OK, SLOT_SUCCESS_MESSAGES.FETCHED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -50,9 +51,14 @@ class SlotController {
           searchFields: ['day'], // customize as needed
         },
       );
-
-      const docs = await Slot.find(filters).sort({ createdAt: -1 });
-      sendSuccess(res, docs, StatusCode.OK, SAMPLE_SUCCESS_MESSAGES.FETCHED);
+      let slot;
+      if ({ ...req.query, ...req.body, ...req.params }?.isPaginated) {
+        const query = Slot.find(filters).sort({ date: -1 });
+        slot = await paginateQuery(query, { ...req.query, ...req.body, ...req.params });
+      } else {
+        slot = await Slot.find(filters).sort({ date: -1 });
+      }
+      sendSuccess(res, slot, StatusCode.OK, SLOT_SUCCESS_MESSAGES.FETCHED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -65,11 +71,11 @@ class SlotController {
 
       const doc = await Slot.findById(id);
       if (!doc || doc.isDeleted) {
-        return next(ApiError.notFound(SAMPLE_ERROR_MESSAGES.NOT_FOUND));
+        return next(ApiError.notFound(SLOT_ERROR_MESSAGES.NOT_FOUND));
       }
 
       const updated = await Slot.findByIdAndUpdate(id, data, { new: true });
-      sendSuccess(res, updated, StatusCode.OK, SAMPLE_SUCCESS_MESSAGES.UPDATED);
+      sendSuccess(res, updated, StatusCode.OK, SLOT_SUCCESS_MESSAGES.UPDATED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -81,7 +87,7 @@ class SlotController {
 
       const doc = await Slot.findById(id);
       if (!doc || doc.isDeleted) {
-        return next(ApiError.notFound(SAMPLE_ERROR_MESSAGES.NOT_FOUND));
+        return next(ApiError.notFound(SLOT_ERROR_MESSAGES.NOT_FOUND));
       }
 
       doc.isDeleted = true;
@@ -89,7 +95,7 @@ class SlotController {
       doc.deletedAt = new Date();
       await doc.save();
 
-      sendSuccess(res, null, StatusCode.OK, SAMPLE_SUCCESS_MESSAGES.DELETED);
+      sendSuccess(res, null, StatusCode.OK, SLOT_SUCCESS_MESSAGES.DELETED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -97,9 +103,10 @@ class SlotController {
 
   async autoSlotGeneration(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const groundId = { ...req.body, ...req.query, ...req.params }.groundId;
-      await generateSlotsAutomatically(groundId);
-      sendSuccess(res, null, StatusCode.OK, SAMPLE_SUCCESS_MESSAGES.CREATED);
+      const groundHasCategoryId = { ...req.body, ...req.query, ...req.params }.groundHasCategoryId;
+      await generateSlotsAutomatically(groundHasCategoryId);
+      // await generateSlotsAutomatically();
+      sendSuccess(res, null, StatusCode.OK, SLOT_SUCCESS_MESSAGES.AUTO_GENERATED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
@@ -108,58 +115,155 @@ class SlotController {
 
 export const slotController = new SlotController();
 
-export const generateSlotsAutomatically = async (groundId?: string) => {
+// export const generateSlotsAutomatically = async (id?: string) => {
+//   const allGrounds = await GroundHasCategories.find({
+//     isActive: true,
+//     isDeleted: false,
+//     ...(id ? { _id: id } : {}),
+//   });
+
+//   for (const ground of allGrounds) {
+//     const { slotDuration, dayToAllowUserCanBook, workingDay, _id } = ground;
+
+//     for (let i = 0; i < dayToAllowUserCanBook; i++) {
+//       const currentDate = moment().add(i, 'days');
+//       const dateOnly = currentDate.startOf('day').toDate();
+//       const weekDay = currentDate.format('dddd').toLowerCase(); // MONDAY, TUESDAY...
+
+//       const workingDayEntry = workingDay.find((wd) => wd.day === weekDay && wd.isActive);
+//       if (!workingDayEntry) continue;
+
+//       const existingSlots = await Slot.find({
+//         groundHasCategoryId: _id,
+//         date: dateOnly,
+//       });
+//       const existingStartTimes = new Set(existingSlots.map((slot) => slot.startTime));
+//       const newSlots = [];
+
+//       for (const priceBlock of workingDayEntry.prices || []) {
+//         if (!priceBlock.isActive) continue;
+
+//         const timeSlots = generateTimeSlots(priceBlock.startTime, priceBlock.endTime, slotDuration);
+
+//         for (const slot of timeSlots) {
+//           if (!existingStartTimes.has(slot.start)) {
+//             newSlots.push({
+//               groundHasCategoryId: _id,
+//               date: dateOnly,
+//               day: weekDay,
+//               startTime: slot.start,
+//               endTime: slot.end,
+//               price: priceBlock.typeWisePrice,
+//             });
+//           }
+//         }
+//       }
+//       if (newSlots.length > 0) {
+//         await Slot.insertMany(newSlots);
+//       }
+//     }
+//   }
+// };
+
+// // Helper function
+// function generateTimeSlots(start: string, end: string, duration: number) {
+//   const slots = [];
+//   const startMoment = moment(start, 'HH:mm');
+//   const endMoment = moment(end, 'HH:mm');
+
+//   while (startMoment.clone().add(duration, 'minutes').isSameOrBefore(endMoment)) {
+//     const endSlot = startMoment.clone().add(duration, 'minutes');
+//     slots.push({
+//       start: startMoment.format('HH:mm'),
+//       end: endSlot.format('HH:mm'),
+//     });
+//     startMoment.add(duration, 'minutes');
+//   }
+
+//   return slots;
+// }
+
+export const generateSlotsAutomatically = async (id?: string) => {
+  // const ids = await GroundHasCategories.find({
+  //   isActive: true,
+  //   isDeleted: false,
+  // });
+  // const idList = ids.map((ground) => ground._id);
   const allGrounds = await GroundHasCategories.find({
     isActive: true,
     isDeleted: false,
-    ...(groundId ? { groundId: groundId } : {}),
+    ...(id ? { _id: id } : {}),
+    // _id: { $in: idList },
   });
 
-  for (const ground of allGrounds) {
-    const { slotDuration, dayToAllowUserCanBook, workingDay, _id } = ground;
+  await Promise.all(
+    allGrounds.map(async (ground) => {
+      const { slotDuration, dayToAllowUserCanBook, workingDay, _id } = ground;
 
-    for (let i = 0; i < dayToAllowUserCanBook; i++) {
-      const currentDate = moment().add(i, 'days');
-      const weekDay = currentDate.format('dddd').toUpperCase(); // 'MONDAY', 'TUESDAY'
+      const allSlotDocs: any[] = [];
 
-      const workingDayEntry = workingDay.find((wd) => wd.day === weekDay && wd.isActive);
-      if (!workingDayEntry) continue;
+      for (let i = 0; i < dayToAllowUserCanBook; i++) {
+        const currentDate = moment().add(i, 'days');
+        const weekDay = currentDate.format('dddd').toLowerCase();
 
-      const { startTime, endTime, price } = workingDayEntry;
-      const slots = generateTimeSlots(startTime, endTime, slotDuration);
+        const workingDayEntry = workingDay.find((wd) => wd.day === weekDay && wd.isActive);
+        if (!workingDayEntry) continue;
 
-      for (const slot of slots) {
-        const exists = await Slot.findOne({
-          groundHasCategoryId: _id,
-          date: currentDate.startOf('day').toDate(),
-          startTime: slot.start,
-        });
+        for (const priceBlock of workingDayEntry.prices || []) {
+          if (priceBlock.isActive === false) continue;
 
-        if (!exists) {
-          await Slot.create({
-            groundHasCategoryId: _id,
-            date: currentDate.startOf('day').toDate(),
-            day: weekDay,
-            startTime: slot.start,
-            endTime: slot.end,
-            price,
-          });
+          const timeSlots = generateTimeSlots(
+            priceBlock.startTime,
+            priceBlock.endTime,
+            slotDuration,
+          );
+
+          for (const slot of timeSlots) {
+            allSlotDocs.push({
+              updateOne: {
+                filter: {
+                  groundHasCategoryId: _id,
+                  date: currentDate.startOf('day').toDate(),
+                  startTime: slot.start,
+                },
+                update: {
+                  $setOnInsert: {
+                    groundHasCategoryId: _id,
+                    date: currentDate.startOf('day').toDate(),
+                    day: weekDay,
+                    startTime: slot.start,
+                    endTime: slot.end,
+                    price: priceBlock.typeWisePrice,
+                  },
+                },
+                upsert: true,
+              },
+            });
+          }
         }
       }
-    }
-  }
+
+      if (allSlotDocs.length > 0) {
+        await Slot.bulkWrite(allSlotDocs, { ordered: false });
+      }
+    }),
+  );
 };
 
-// Helper to generate time slots from 10:00 to 12:00 every 30 mins
+// Helper: Generate time slots between start & end based on duration
 function generateTimeSlots(start: string, end: string, duration: number) {
   const slots = [];
-  const startMoment = moment(start, 'HH:mm');
+  let startMoment = moment(start, 'HH:mm');
   const endMoment = moment(end, 'HH:mm');
 
   while (startMoment.clone().add(duration, 'minutes').isSameOrBefore(endMoment)) {
     const endSlot = startMoment.clone().add(duration, 'minutes');
-    slots.push({ start: startMoment.format('HH:mm'), end: endSlot.format('HH:mm') });
+    slots.push({
+      start: startMoment.format('HH:mm'),
+      end: endSlot.format('HH:mm'),
+    });
     startMoment.add(duration, 'minutes');
   }
+
   return slots;
 }

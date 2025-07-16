@@ -55,11 +55,16 @@ class SlotValidator {
     try {
       const schema = Joi.object({
         search: Joi.string().optional(),
-        groundHasCategoryId: Joi.string().optional(),
+        groundHasCategoryId: Joi.alternatives()
+          .try(Joi.string(), Joi.array().items(Joi.string()))
+          .optional(),
         date: Joi.date().optional(),
         isBooked: Joi.boolean().optional(),
         isActive: Joi.boolean().optional(),
         isDeleted: Joi.boolean().optional(),
+        isPaginated: Joi.boolean().optional(),
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).default(10),
       });
       const { error } = schema.validate(req.query);
 
@@ -124,7 +129,9 @@ class SlotValidator {
   async autoSlotGeneration(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({
-        groundHasCategoryId: Joi.string().required(),
+        groundHasCategoryId: Joi.alternatives()
+          .try(Joi.string(), Joi.array().items(Joi.string()))
+          .required(),
       });
 
       const { error } = schema.validate(req.body);

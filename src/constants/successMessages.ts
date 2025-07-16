@@ -17,6 +17,7 @@ export enum AUTH_SUCCESS_MESSAGES {
 
 export enum USER_SUCCESS_MESSAGES {
   USER_CREATED = 'User created successfully',
+  USER_REGISTERED = 'User registered successfully',
   USER_GET_SUCCESS = 'User retrieved successfully',
   USER_UPDATED = 'User updated successfully',
   USER_DELETED = 'User deleted successfully',
@@ -48,4 +49,11 @@ export const SAMPLE_SUCCESS_MESSAGES = {
   FETCHED: 'Sample(s) fetched successfully.',
   UPDATED: 'Sample updated successfully.',
   DELETED: 'Sample deleted successfully.',
+};
+export const SLOT_SUCCESS_MESSAGES = {
+  CREATED: 'Slot created successfully.',
+  AUTO_GENERATED: 'Slots auto-generated successfully.',
+  FETCHED: 'Slot(s) fetched successfully.',
+  UPDATED: 'Slot updated successfully.',
+  DELETED: 'Slot deleted successfully.',
 };

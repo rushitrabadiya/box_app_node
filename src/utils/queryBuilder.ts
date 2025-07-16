@@ -14,8 +14,13 @@ export const buildMongoFilter = (
 
   // Apply direct filters
   for (const field of allowedFields) {
-    if (input[field] !== undefined) {
-      query[field] = input[field];
+    const value = input[field];
+    if (value !== undefined) {
+      if (Array.isArray(value)) {
+        query[field] = { $in: value };
+      } else {
+        query[field] = value;
+      }
     }
   }
 

@@ -60,15 +60,19 @@ export const randomString = (length = 32): string => crypto.randomBytes(length /
 export const createHashString = (token: string) =>
   crypto.createHash('sha256').update(token).digest('hex');
 
-/** Calculate pagination offset */
-export const getPagination = (page = 1, limit = 10) => ({
-  limit,
-  offset: (page - 1) * limit,
-});
-
 export const generateOtp = (length = 6): string => {
   const min = Math.pow(10, length - 1);
   const max = Math.pow(10, length) - 1;
   const random = crypto.randomInt(min, max + 1);
   return random.toString();
+};
+
+export const generateStrongPassword = (length = 8): string => {
+  const charset =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;:,.<>?';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += charset.charAt(crypto.randomInt(0, charset.length));
+  }
+  return password;
 };

@@ -48,3 +48,33 @@ export const buildResetPasswordEmail = (resetLink: string, validateTime: number)
     <p style="font-size: 12px; color: #ccc;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
   </div>
 `;
+
+export const buildPasswordEmail = (password: string): string => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff;">
+    <h2 style="color: #333333; text-align: center;">Your New Password</h2>
+    
+    <p style="font-size: 16px; color: #555555;">
+      You requested a new password. Please use the password below to log in to your account:
+    </p>
+
+    <div style="margin: 24px 0; text-align: center;">
+      <span style="display: inline-block; background: #f3f3f3; padding: 15px 25px; font-size: 22px; font-weight: bold; color: #f85d1b; border-radius: 6px; letter-spacing: 1px;">
+        ${password}
+      </span>
+    </div>
+
+    <p style="font-size: 14px; color: #888888;">
+      For security, please change your password immediately after logging in.
+    </p>
+
+    <p style="font-size: 14px; color: #999999; margin-top: 30px;">
+      If you did not request this password reset, please ignore this email or contact support.
+    </p>
+
+    <hr style="margin-top: 30px; border: none; border-top: 1px solid #eee;" />
+
+    <p style="font-size: 12px; color: #cccccc; text-align: center;">
+      &copy; ${new Date().getFullYear()} Your Company. All rights reserved.
+    </p>
+  </div>
+`;

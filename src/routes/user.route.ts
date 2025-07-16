@@ -6,6 +6,13 @@ import { authenticateJwt, verifyUser } from '../middleware/authenticateJwt';
 const router = Router();
 
 router.post(
+  '/registerUser',
+  authenticateJwt,
+  // verifyUser,
+  userValidator.validateRegisterUser,
+  userController.registerUser,
+);
+router.post(
   '/',
   authenticateJwt,
   // verifyUser,

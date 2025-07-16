@@ -1,6 +1,8 @@
 import nodemailer from 'nodemailer';
-import { buildOtpEmail } from './mailer';
+import { buildOtpEmail, buildPasswordEmail } from './mailer';
 import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -76,5 +78,11 @@ export const sendOtpEmail = async (
 ): Promise<void> => {
   const subject = 'Your OTP Code';
   const html = buildOtpEmail(otp, validateTime);
+  await sendEmail(to, subject, html);
+};
+
+export const sendPasswordEmail = async (to: string, password: string): Promise<void> => {
+  const subject = 'Your Account Password';
+  const html = buildPasswordEmail(password);
   await sendEmail(to, subject, html);
 };
