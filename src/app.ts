@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(logger);
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use('/api/v1', routes);
 app.get('/', (req, res) => {
