@@ -6,6 +6,7 @@ import { globalErrorHandler } from './middleware/errorHandler';
 import { applySecurity } from './middleware/security';
 import { SELF_URL } from './constants/app';
 import './helpers/corn-jobs';
+import path from 'path';
 
 export const app = express();
 
@@ -18,6 +19,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(logger);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use('/api/v1', routes);
 app.get('/', (req, res) => {
   res.status(200).json({
