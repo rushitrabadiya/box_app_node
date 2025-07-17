@@ -47,6 +47,11 @@ export const BOOKING_STATUS = {
   BOOKED: 'booked',
   CANCELLED: 'cancelled',
 };
+export const FILE_TYPE = {
+  IMAGE: 'image',
+  VIDEO: 'video',
+  AUDIO: 'audio',
+};
 
 export const PAYMENT_STATUS = {
   PENDING: 'pending',

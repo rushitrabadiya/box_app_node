@@ -57,3 +57,8 @@ export const SLOT_SUCCESS_MESSAGES = {
   UPDATED: 'Slot updated successfully.',
   DELETED: 'Slot deleted successfully.',
 };
+
+export const MEDIA_SUCCESS_MESSAGES = {
+  UPLOADED: 'Media uploaded successfully',
+  FETCHED: 'Media fetched successfully',
+};

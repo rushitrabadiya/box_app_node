@@ -50,3 +50,8 @@ export const SLOT_ERROR_MESSAGES = {
   INVALID_DATA: 'Invalid data provided for slot.',
   INVALID_GROUND: 'Invalid ground ID provided.',
 };
+export const MEDIA_ERROR_MESSAGES = {
+  FILE_REQUIRED: 'No file was uploaded',
+  FILE_PATH_REQUIRED: 'File path is required',
+  FILE_NOT_FOUND: 'File not found',
+};
