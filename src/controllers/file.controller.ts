@@ -26,8 +26,15 @@ class MediaController {
         mimeType: mimetype,
         uploadedBy: req.user?._id,
       });
+        const normalizedPath = doc.filePath.replace(/\\/g, '/');
+      const fileUrl = `${SELF_URL}${normalizedPath}`;
 
-      sendSuccess(res, doc, StatusCode.CREATED, MEDIA_SUCCESS_MESSAGES.UPLOADED);
+      const result = {
+        ...doc.toObject(),
+        url: fileUrl,
+      };
+
+      sendSuccess(res, result, StatusCode.CREATED, MEDIA_SUCCESS_MESSAGES.UPLOADED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
