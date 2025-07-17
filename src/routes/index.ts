@@ -5,6 +5,7 @@ import categoryRoute from './category.route';
 import groundRegistrationRoute from './groundRegistration.route';
 import groundHasCategoriesRoute from './groundHasCategories.route';
 import slotRoute from './slot.route';
+import fileRoute from './file.route';
 
 const router = Router();
 router.use('/users', userRoute);
@@ -13,5 +14,6 @@ router.use('/category', categoryRoute);
 router.use('/groundRegistration', groundRegistrationRoute);
 router.use('/groundHasCategories', groundHasCategoriesRoute);
 router.use('/slot', slotRoute);
+router.use('/file', fileRoute);
 
 export default router;

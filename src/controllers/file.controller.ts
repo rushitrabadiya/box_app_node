@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs';
- import { ApiError } from '../utils/apiError';
+import { ApiError } from '../utils/apiError';
 import { sendSuccess } from '../utils/apiResponse';
 import { StatusCode } from '../constants/statusCodes';
 import { MEDIA_SUCCESS_MESSAGES } from '../constants/successMessages';
 import { MEDIA_ERROR_MESSAGES } from '../constants/errorMessages';
 import { Files } from '../models/mongo/file.model';
+import { ENV } from '../config/env';
+import { SELF_URL } from '../constants/app';
 
 class MediaController {
   async upload(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -48,16 +50,23 @@ class MediaController {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
   }
-   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = req.params.id;
-      const doc = await Files.findById(id);
+      let doc = await Files.findById(id);
 
       if (!doc) {
         return next(ApiError.notFound(MEDIA_ERROR_MESSAGES.FILE_NOT_FOUND));
       }
+      const normalizedPath = doc.filePath.replace(/\\/g, '/');
+      const fileUrl = `${SELF_URL}${normalizedPath}`;
 
-      sendSuccess(res, doc, StatusCode.OK, MEDIA_SUCCESS_MESSAGES.FETCHED);
+      const result = {
+        ...doc.toObject(),
+        url: fileUrl,
+      };
+
+      sendSuccess(res, result, StatusCode.OK, MEDIA_SUCCESS_MESSAGES.FETCHED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
