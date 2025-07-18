@@ -41,13 +41,13 @@ class GroundRegistrationController {
     try {
       const reqData = { ...req.query, ...req.body, ...req.params };
       // if (!reqData.owner && !req.user?.isAdmin) reqData.owner = req.user?._id;
-      const filters = buildMongoFilter(reqData, {
+      const { filter, sort } = buildMongoFilter(reqData, {
         allowedFields: ['categoryId', 'city', 'state', 'status', 'isActive', 'owner'],
         baseQuery: { isDeleted: false },
         searchFields: ['name', 'city', 'state', 'email', 'mobile'],
       });
 
-      const grounds = await GroundRegistration.find(filters).sort({ createdAt: -1 });
+      const grounds = await GroundRegistration.find(filter).sort(sort || { createdAt: -1 });
 
       sendSuccess(res, grounds, StatusCode.OK, GROUND_REGISTRATION_SUCCESS_MESSAGES.FETCHED);
     } catch (err) {

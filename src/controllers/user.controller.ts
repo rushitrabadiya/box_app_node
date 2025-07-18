@@ -68,22 +68,22 @@ class UserController {
     try {
       const reqData = { ...req.body, ...req.query, ...req.params };
 
-      const searchQuery = buildMongoFilter(reqData, {
+      const { filter, sort } = buildMongoFilter(reqData, {
         allowedFields: ['email', 'city', 'country', 'state', 'zipCode'],
         baseQuery: { isDeleted: false, isActive: true },
         searchFields: ['name', 'email', 'phone'],
       });
       let users;
       if (reqData.isPaginated) {
-        const query = User.find(searchQuery)
+        const query = User.find(filter)
           .select('-password -otp -otpExpiresAt -createdBy')
-          .sort({ createdAt: -1 });
+          .sort(sort || { createdAt: -1 });
 
         users = await paginateQuery(query, reqData);
       } else {
-        users = await User.find(searchQuery)
+        users = await User.find(filter)
           .select('-password -otp -otpExpiresAt -createdBy')
-          .sort({ createdAt: -1 });
+          .sort(sort || { createdAt: -1 });
       }
 
       sendSuccess(res, users, StatusCode.OK, USER_SUCCESS_MESSAGES.USER_GET_SUCCESS);

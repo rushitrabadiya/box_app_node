@@ -1,6 +1,13 @@
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/apiError';
+import { paginationValidators, sortStringValidator } from '../utils/joi.common';
+
+const options = {
+  abortEarly: false, // include all errors
+  allowUnknown: false, // ignore unknown props
+  // stripUnknown: true, // remove unknown props
+};
 
 class SlotValidator {
   // ✅ Create Slot
@@ -17,7 +24,7 @@ class SlotValidator {
         isBooked: Joi.boolean().optional(),
       });
 
-      const { error } = schema.validate(req.body);
+      const { error } = schema.validate(req.body, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');
@@ -37,7 +44,7 @@ class SlotValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');
@@ -54,7 +61,6 @@ class SlotValidator {
   async getAllSlot(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({
-        search: Joi.string().optional(),
         groundHasCategoryId: Joi.alternatives()
           .try(Joi.string(), Joi.array().items(Joi.string()))
           .optional(),
@@ -62,11 +68,9 @@ class SlotValidator {
         isBooked: Joi.boolean().optional(),
         isActive: Joi.boolean().optional(),
         isDeleted: Joi.boolean().optional(),
-        isPaginated: Joi.boolean().optional(),
-        page: Joi.number().integer().min(1).default(1),
-        limit: Joi.number().integer().min(1).default(10),
+        ...paginationValidators,
       });
-      const { error } = schema.validate(req.query);
+      const { error } = schema.validate(req.query, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');
@@ -94,7 +98,10 @@ class SlotValidator {
         isBooked: Joi.boolean().optional(),
       });
 
-      const bodyError = bodySchema.validate({ ...req.body, ...req.params, ...req.query }).error;
+      const bodyError = bodySchema.validate(
+        { ...req.body, ...req.params, ...req.query },
+        options,
+      ).error;
       if (bodyError) {
         return next(ApiError.badRequest(bodyError.details.map((d) => d.message).join(', ')));
       }
@@ -112,7 +119,7 @@ class SlotValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');
@@ -134,7 +141,7 @@ class SlotValidator {
           .required(),
       });
 
-      const { error } = schema.validate(req.body);
+      const { error } = schema.validate(req.body, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');

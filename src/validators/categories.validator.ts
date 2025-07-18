@@ -1,7 +1,12 @@
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/apiError';
-
+import { paginationValidators, sortStringValidator } from '../utils/joi.common';
+const options = {
+  abortEarly: false, // include all errors
+  allowUnknown: false, // ignore unknown props
+  // stripUnknown: true, // remove unknown props
+};
 class CategoryValidator {
   // ✅ Create Category
   async createCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -12,7 +17,7 @@ class CategoryValidator {
         img: Joi.string().allow('', null).optional(),
       });
 
-      const { error } = schema.validate(req.body);
+      const { error } = schema.validate(req.body, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');
@@ -32,7 +37,7 @@ class CategoryValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');
@@ -50,12 +55,12 @@ class CategoryValidator {
     try {
       const schema = Joi.object({
         // name: Joi.string().optional(),
-        search: Joi.string().optional(),
         isActive: Joi.boolean().optional(),
         isDeleted: Joi.boolean().optional(),
+        ...paginationValidators,
       });
 
-      const { error } = schema.validate(req.query);
+      const { error } = schema.validate(req.query, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');
@@ -79,7 +84,10 @@ class CategoryValidator {
         img: Joi.string().allow('', null).optional(),
       });
 
-      const bodyError = bodySchema.validate({ ...req.body, ...req.params, ...req.query }).error;
+      const bodyError = bodySchema.validate(
+        { ...req.body, ...req.params, ...req.query },
+        options,
+      ).error;
       if (bodyError) {
         return next(ApiError.badRequest(bodyError.details.map((d) => d.message).join(', ')));
       }
@@ -97,7 +105,7 @@ class CategoryValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
 
       if (error) {
         const errorMessage = error.details.map((d) => d.message).join(', ');

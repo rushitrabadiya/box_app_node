@@ -49,13 +49,13 @@ class CategoryController {
     try {
       const reqData = { ...req.body, ...req.query, ...req.params };
 
-      const searchQuery = buildMongoFilter(reqData, {
+      const { filter, sort } = buildMongoFilter(reqData, {
         allowedFields: ['isActive', 'isDeleted'],
         baseQuery: { isDeleted: false },
         searchFields: ['name', 'description'],
       });
 
-      const categories = await Categories.find(searchQuery).sort({ createdAt: -1 });
+      const categories = await Categories.find(filter).sort(sort || { createdAt: -1 });
 
       sendSuccess(res, categories, StatusCode.OK, CATEGORY_SUCCESS_MESSAGES.CATEGORY_FETCHED);
     } catch (err) {

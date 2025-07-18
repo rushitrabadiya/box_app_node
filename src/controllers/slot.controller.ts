@@ -43,7 +43,7 @@ class SlotController {
 
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const filters = buildMongoFilter(
+      const { filter, sort } = buildMongoFilter(
         { ...req.query, ...req.body, ...req.params },
         {
           allowedFields: ['groundHasCategoryId', 'date', 'isActive', 'isBooked'], // customize as needed
@@ -53,10 +53,44 @@ class SlotController {
       );
       let slot;
       if ({ ...req.query, ...req.body, ...req.params }?.isPaginated) {
-        const query = Slot.find(filters).sort({ date: -1 });
+        const query = Slot.find(filter)
+          .sort(sort || { date: -1 })
+          .populate({
+            path: 'groundHasCategoryId',
+            select: 'name categoryId groundId',
+            populate: [
+              {
+                path: 'groundId',
+                select: 'name state city',
+                model: 'GroundRegistration',
+              },
+              {
+                path: 'categoryId',
+                select: 'name img',
+                model: 'Categories',
+              },
+            ],
+          });
         slot = await paginateQuery(query, { ...req.query, ...req.body, ...req.params });
       } else {
-        slot = await Slot.find(filters).sort({ date: -1 });
+        slot = await Slot.find(filter)
+          .sort(sort || { date: -1 })
+          .populate({
+            path: 'groundHasCategoryId',
+            select: 'name categoryId groundId',
+            populate: [
+              {
+                path: 'groundId',
+                select: 'name state city',
+                model: 'GroundRegistration',
+              },
+              {
+                path: 'categoryId',
+                select: 'name img',
+                model: 'Categories',
+              },
+            ],
+          });
       }
       sendSuccess(res, slot, StatusCode.OK, SLOT_SUCCESS_MESSAGES.FETCHED);
     } catch (err) {

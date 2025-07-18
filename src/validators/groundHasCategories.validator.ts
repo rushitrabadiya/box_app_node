@@ -2,7 +2,12 @@ import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/apiError';
 import { GROUND_HAS_CATEGORIES_STATUS, WEEK_DAYS_ENUM } from '../constants/app';
-
+import { paginationValidators, sortStringValidator } from '../utils/joi.common';
+const options = {
+  abortEarly: false, // include all errors
+  allowUnknown: false, // ignore unknown props
+  // stripUnknown: true, // remove unknown props
+};
 class GroundHasCategoriesValidator {
   // ✅ Create
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -56,7 +61,7 @@ class GroundHasCategoriesValidator {
         images: imageSchema.optional(),
       });
 
-      const { error } = schema.validate(req.body);
+      const { error } = schema.validate(req.body, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -74,7 +79,7 @@ class GroundHasCategoriesValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -100,10 +105,10 @@ class GroundHasCategoriesValidator {
           .optional(),
         isActive: Joi.boolean().optional(),
         isDeleted: Joi.boolean().optional(),
-        search: Joi.string().trim().optional(),
+        ...paginationValidators,
       });
 
-      const { error } = schema.validate(req.query);
+      const { error } = schema.validate(req.query, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -168,7 +173,7 @@ class GroundHasCategoriesValidator {
         images: imageSchema.optional(),
       });
 
-      const { error } = schema.validate({ ...req.body, ...req.params });
+      const { error } = schema.validate({ ...req.body, ...req.params }, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -186,7 +191,7 @@ class GroundHasCategoriesValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }

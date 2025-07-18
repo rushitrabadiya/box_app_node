@@ -4,9 +4,6 @@
 // import { StatusCode } from '../constants/statusCodes';
 // import { buildMongoFilter } from '../utils/queryBuilder';
 
-// // Replace with actual model
-// import { SampleModel } from '../models/mongo/sample.model';
-
 // // Replace with actual messages
 // import { SAMPLE_SUCCESS_MESSAGES } from '../constants/successMessages';
 // import { SAMPLE_ERROR_MESSAGES } from '../constants/errorMessages';
@@ -16,7 +13,7 @@
 //     try {
 //       const data = { ...req.body, createdBy: req.user?._id };
 
-//       const doc = await SampleModel.create(data);
+//       const doc = await Book.create(data);
 //       sendSuccess(res, doc, StatusCode.CREATED, SAMPLE_SUCCESS_MESSAGES.CREATED);
 //     } catch (err) {
 //       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
@@ -40,16 +37,16 @@
 
 //   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
 //     try {
-//   const { filter, sort } = buildMongoFilter(
-//     { ...req.query, ...req.body, ...req.params },
-//     {
-//       allowedFields: ['categoryId', 'status', 'isActive'], // customize as needed
-//       baseQuery: { isDeleted: false },
-//       searchFields: [], // customize as needed
-//     },
-//   );
+//       const filters = buildMongoFilter(
+//         { ...req.query, ...req.body, ...req.params },
+//         {
+//           allowedFields: ['categoryId', 'status', 'isActive'], // customize as needed
+//           baseQuery: { isDeleted: false },
+//           searchFields: [], // customize as needed
+//         },
+//       );
 
-//       const docs = await SampleModel.find(filter).sort(sort ||{ createdAt: -1 });
+//       const docs = await SampleModel.find(filters).sort({ createdAt: -1 });
 //       sendSuccess(res, docs, StatusCode.OK, SAMPLE_SUCCESS_MESSAGES.FETCHED);
 //     } catch (err) {
 //       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));

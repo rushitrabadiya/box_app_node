@@ -2,7 +2,12 @@ import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/apiError';
 import { GROUND_REGISTRATION_STATUS } from '../constants/app';
-
+import { paginationValidators, sortStringValidator } from '../utils/joi.common';
+const options = {
+  abortEarly: false, // include all errors
+  allowUnknown: false, // ignore unknown props
+  // stripUnknown: true, // remove unknown props
+};
 class GroundRegistrationValidator {
   // ✅ Create Ground Registration
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -46,7 +51,7 @@ class GroundRegistrationValidator {
         isDeleted: Joi.boolean().default(false),
       });
 
-      const { error } = schema.validate(req.body);
+      const { error } = schema.validate(req.body, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -64,7 +69,7 @@ class GroundRegistrationValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -79,7 +84,6 @@ class GroundRegistrationValidator {
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({
-        search: Joi.string().optional(),
         isActive: Joi.boolean().optional(),
         isDeleted: Joi.boolean().optional(),
         city: Joi.string().trim().optional(),
@@ -89,12 +93,13 @@ class GroundRegistrationValidator {
         //   .regex(/^[0-9a-fA-F]{24}$/)
         //   .optional(),
         isBlocked: Joi.boolean().optional(),
+        ...paginationValidators,
         status: Joi.string()
           .valid(...Object.values(GROUND_REGISTRATION_STATUS))
           .optional(),
       });
 
-      const { error } = schema.validate(req.query);
+      const { error } = schema.validate(req.query, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -146,7 +151,7 @@ class GroundRegistrationValidator {
         isDeleted: Joi.boolean().optional(),
       });
 
-      const { error } = schema.validate({ ...req.body, ...req.params });
+      const { error } = schema.validate({ ...req.body, ...req.params }, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }
@@ -164,7 +169,7 @@ class GroundRegistrationValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
       if (error) {
         return next(ApiError.badRequest(error.details.map((d) => d.message).join(', ')));
       }

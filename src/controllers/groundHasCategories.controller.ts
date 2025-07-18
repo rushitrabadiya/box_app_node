@@ -38,13 +38,13 @@ class GroundHasCategoriesController {
 
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const filters = buildMongoFilter(req.query, {
+      const { filter, sort } = buildMongoFilter(req.query, {
         allowedFields: ['categoryId', 'status', 'isActive', 'groundId'], // customize as needed
         baseQuery: { isDeleted: false },
         searchFields: ['name', 'email', 'mobile'], // customize as needed
       });
 
-      const docs = await GroundHasCategories.find(filters).sort({ createdAt: -1 });
+      const docs = await GroundHasCategories.find(filter).sort(sort || { createdAt: -1 });
       sendSuccess(res, docs, StatusCode.OK, GROUND_HAS_CATEGORIES_SUCCESS_MESSAGES.FETCHED);
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));

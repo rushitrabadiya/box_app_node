@@ -12,7 +12,7 @@ export interface IBooking extends IBaseModel {
   groundHasCategoryId: Types.ObjectId;
   date: Date;
   slotIds: Types.ObjectId[]; // multiple slots selected
-  totalAmount: number;
+  totalAmount: string;
   status: BookingStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
@@ -20,7 +20,12 @@ export interface IBooking extends IBaseModel {
   paymentDetails?: {
     transactionId?: string; // optional, for tracking payment
     provider?: string; // optional, e.g., 'Stripe', 'PayPal'
+    payAmount: string;
   };
+  isDeleted: boolean;
+  paymentDate?: Date;
   cancellationReason?: string; // optional, if booking is cancelled
   cancellationDate?: Date; // optional, if booking is cancelled
+  paymentReturnDate?: Date; // optional if return policy have
+  paymentReturnAmount?: string; // optional if return policy have
 }

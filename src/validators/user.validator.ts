@@ -1,7 +1,12 @@
 import Joi from 'joi';
 import { NextFunction, Request, Response } from 'express';
 import { ApiError } from '../utils/apiError';
-
+import { paginationValidators, sortStringValidator } from '../utils/joi.common';
+const options = {
+  abortEarly: false, // include all errors
+  allowUnknown: false, // ignore unknown props
+  // stripUnknown: true, // remove unknown props
+};
 class UserValidator {
   async validateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -30,7 +35,7 @@ class UserValidator {
         // otpExpiresAt: Joi.date().required(),
       });
 
-      const { error } = schema.validate(req.body);
+      const { error } = schema.validate(req.body, options);
 
       if (error) {
         const errorMessage = error.details.map((details) => details.message).join(', ');
@@ -65,7 +70,7 @@ class UserValidator {
         // otpExpiresAt: Joi.date().required(),
       });
 
-      const { error } = schema.validate(req.body);
+      const { error } = schema.validate(req.body, options);
 
       if (error) {
         const errorMessage = error.details.map((details) => details.message).join(', ');
@@ -106,10 +111,7 @@ class UserValidator {
         otpExpiresAt: Joi.date().optional(),
       });
 
-      const { error } = schema.validate(
-        { ...req.body, ...req.params, ...req.query },
-        { allowUnknown: false },
-      );
+      const { error } = schema.validate({ ...req.body, ...req.params, ...req.query }, options);
 
       if (error) {
         const errorMessage = error.details.map((details) => details.message).join(', ');
@@ -128,7 +130,7 @@ class UserValidator {
         id: Joi.string().required(),
       });
 
-      const { error } = schema.validate(req.params);
+      const { error } = schema.validate(req.params, options);
 
       if (error) {
         const errorMessage = error.details.map((details) => details.message).join(', ');
@@ -144,7 +146,6 @@ class UserValidator {
   async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const schema = Joi.object({
-        search: Joi.string().optional(),
         email: Joi.string().email().optional(),
         isDeleted: Joi.boolean().optional(),
         isActive: Joi.boolean().optional(),
@@ -152,12 +153,10 @@ class UserValidator {
         country: Joi.string().optional(),
         state: Joi.string().optional(),
         zipCode: Joi.string().optional(),
-        isPaginated: Joi.boolean().optional(),
-        page: Joi.number().integer().min(1).default(1),
-        limit: Joi.number().integer().min(1).default(10),
+        ...paginationValidators,
       });
 
-      const { error } = schema.validate(req.query);
+      const { error } = schema.validate(req.query, options);
 
       if (error) {
         const errorMessage = error.details.map((details) => details.message).join(', ');

@@ -21,7 +21,7 @@ router.post(
   slotValidator.autoSlotGeneration,
   slotController.autoSlotGeneration,
 );
-router.get('/', authenticateJwt, verifyUser, slotValidator.getAllSlot, slotController.getAll);
+router.get('/', slotValidator.getAllSlot, slotController.getAll);
 router.get('/:id', authenticateJwt, verifyUser, slotValidator.getSlotById, slotController.getById);
 router.put(
   '/:id',
