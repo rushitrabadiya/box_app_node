@@ -219,6 +219,24 @@ export const generateSlotsAutomatically = async (id?: string) => {
           );
 
           for (const slot of timeSlots) {
+            const startDateTime = moment(currentDate)
+              .set({
+                hour: Number(slot.start.split(':')[0]),
+                minute: Number(slot.start.split(':')[1]),
+                second: 0,
+                millisecond: 0,
+              })
+              .toISOString();
+
+            const endDateTime = moment(currentDate)
+              .set({
+                hour: Number(slot.end.split(':')[0]),
+                minute: Number(slot.end.split(':')[1]),
+                second: 0,
+                millisecond: 0,
+              })
+              .toISOString();
+
             allSlotDocs.push({
               updateOne: {
                 filter: {
@@ -231,8 +249,10 @@ export const generateSlotsAutomatically = async (id?: string) => {
                     groundHasCategoryId: _id,
                     date: currentDate.startOf('day').toDate(),
                     day: weekDay,
-                    startTime: slot.start,
-                    endTime: slot.end,
+                    startTime: startDateTime,
+                    // startTime: slot.start,
+                    endTime: endDateTime,
+                    // endTime: slot.end,
                     price: priceBlock.typeWisePrice,
                   },
                 },
