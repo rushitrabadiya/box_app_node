@@ -26,11 +26,12 @@ class MediaController {
         mimeType: mimetype,
         uploadedBy: req.user?._id,
       });
-        const normalizedPath = doc.filePath.replace(/\\/g, '/');
+      const normalizedPath = doc.filePath.replace(/\\/g, '/');
       const fileUrl = `${SELF_URL}${normalizedPath}`;
 
       const result = {
         ...doc.toObject(),
+        filePath: normalizedPath,
         url: fileUrl,
       };
 
@@ -70,6 +71,7 @@ class MediaController {
 
       const result = {
         ...doc.toObject(),
+        filePath: normalizedPath,
         url: fileUrl,
       };
 
