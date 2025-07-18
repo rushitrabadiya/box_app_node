@@ -112,7 +112,33 @@ export class AuthController {
       // Send OTP via email
       sendOtpEmail(reqData.email, otp, OTP_EXPIRY_MINUTES);
 
-      sendSuccess(res, newUser, StatusCode.CREATED, AUTH_SUCCESS_MESSAGES.REGISTRATION_SUCCESS);
+      const accessToken = signAccessToken(newUser.id);
+      const refreshToken = signRefreshToken(newUser.id);
+
+      const REFRESH_TOKEN_VALIDITY_MINUTES: number = parseInt(
+        process.env.REFRESH_TOKEN_EXPIRY || '7d',
+        10,
+      );
+      // Store refresh token in the database
+      await TokenModel.create({
+        userId: newUser.id,
+        token: crypto.createHash('sha256').update(refreshToken).digest('hex'),
+        expiryDate: new Date(Date.now() + REFRESH_TOKEN_VALIDITY_MINUTES * MINUTE_MS),
+        name: TOKEN_TYPES.REFRESH,
+        createdBy: newUser.id,
+        updatedBy: newUser.id,
+      });
+      const safeUser = omit(newUser.toObject(), ['otp', 'otpExpiresAt', 'password']);
+      sendSuccess(
+        res,
+        {
+          accessToken,
+          refreshToken,
+          safeUser,
+        },
+        StatusCode.CREATED,
+        AUTH_SUCCESS_MESSAGES.REGISTRATION_SUCCESS,
+      );
     } catch (err) {
       return next(ApiError.internal(err instanceof Error ? err.message : String(err)));
     }
