@@ -57,7 +57,7 @@ const MAX_FILE_SIZE = {
 // Multer storage config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const folder = `uploads/${file.mimetype.startsWith('video') ? 'videos' : 'images'}`;
+    const folder = `uploads`;
     fs.mkdirSync(folder, { recursive: true });
     cb(null, folder);
   },
